@@ -1,3 +1,18 @@
+#  Cache
+__pycache__/
+
+#  Editor settings
+.vscode
+
+#  Packages & Build
 node_modules
+dist/
+build/
+
+# User defined
 backend/data
 alexParser.py
+
+.DS_Store
+*.sqlite3
+*.db
