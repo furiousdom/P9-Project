@@ -1,0 +1,28 @@
+root = true
+# Applies to all.
+[*]
+charset = utf-8
+indent_style = space
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+# Python specific rules.
+[*.py]
+indent_size = 4
+# HTML specific rules.
+[*.html]
+indent_size = 2
+# Javascript (+Vue) specific rules.
+# This is not really by the book for these, but
+# its how a Python team used to work like.
+[*.{js,vue}]
+indent_size = 2
+# Coffeescript specific rules.
+[*.coffee]
+indent_size = 2
+# Configuration files.
+[{package.json,.travis.yml,webpack.config.js}]
+indent_size = 2
+# Markdown files.
+[*.md]
+trim_trailing_whitespace = false

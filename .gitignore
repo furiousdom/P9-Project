@@ -5,6 +5,7 @@ __pycache__/
 .vscode
 
 #  Packages & Build
+.DS_Store
 node_modules
 dist/
 build/
@@ -13,6 +14,9 @@ build/
 backend/data
 alexParser.py
 
-.DS_Store
+# local env files
+.env.local
+.env.*.local
+
 *.sqlite3
 *.db
