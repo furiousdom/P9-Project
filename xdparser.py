@@ -21,7 +21,7 @@ def parseSmiles(dataset):
     small_molecules = {}
     ns, sm, cp, akind, avalue, asmiles = aces()
 
-    print('Loading copleted. Parser start...')
+    print('Loading completed. Parser start...')
 
     for child in root:
         name = child.find(xdata[ns] + 'name')
