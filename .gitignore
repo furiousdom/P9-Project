@@ -10,9 +10,8 @@ node_modules
 dist/
 build/
 
-# User defined
-backend/data
-alexParser.py
+# Storage
+data/
 
 # local env files
 .env.local

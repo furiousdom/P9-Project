@@ -79,7 +79,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'postgres': {
+    'localPostgres': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'drugdb',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    },
+    'remotePostgres': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'daac',
         'USER': 'daac',
