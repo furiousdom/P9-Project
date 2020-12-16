@@ -155,6 +155,7 @@ def KNNmol2VecFeaturization(smiles):#Needs packages that are incompatible I thin
     moleculelist.sort(key=lambda x: x.average_distance)
     for mole in moleculelist:
         print(mole.average_distance)
+    
 
 ###############################################################################################################################
 
@@ -169,11 +170,12 @@ def Manhattanmol2VecFeaturization(smiles):#Needs packages that are incompatible 
     moleculelist = []
     while i<len(features):
         while k<20:       
-            if (len(features[k])!=0 and len(features[i])!=0):
-                combinedtempdistance = combinedtempdistance + distance.cdist(features[k], features[i], 'cityblock')#It compains that its not a 2D array. Maybe need to delimiter it with comma. Other option: numpy.abs(features[k] - features[i]).sum
+            if (len(features[k])!=0 and len(features[i])!=0):            
+                for x in range(0,300):
+                    combinedtempdistance = combinedtempdistance + abs(features[k][x]-features[i][x])
                 k=k+1
             else:
-                print('A molecule could not be featurized. Skipping ahead to next molecule.')
+                #print('A molecule could not be featurized. Skipping ahead to next molecule.')
                 k=k+1
         combinedtempdistance = combinedtempdistance / 20 #20 should be replaced by len(list of initial molecules)
         Molecule = molecule(combinedtempdistance, i) #Might want to use the actual name instead of just its number in the index.
