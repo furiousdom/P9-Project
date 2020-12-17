@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import Drug
+from .models import MainTable
 
-class DrugSerializer(serializers.ModelSerializer):
+class MainTableSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Drug
-        fields = ('primarykey', 'name')
+        model = MainTable
+        fields = ('primary_id', 'name', 'description')

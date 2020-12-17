@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .models import Drug
-from .serializers import DrugSerializer
+from .models import MainTable
+from .serializers import MainTableSerializer
 
 # Create your views here.
 
 class DrugView(generics.ListAPIView):
-    queryset = Drug.objects.all()
-    serializer_class = DrugSerializer
+    queryset = MainTable.objects.all()
+    serializer_class = MainTableSerializer
