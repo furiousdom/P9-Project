@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import DrugXmlView
+from .views import DrugView
 
 urlpatterns = [
-    path('xmldrugs', DrugXmlView.as_view())
+    path('home/', DrugView.as_view())
 ]

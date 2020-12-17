@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import DrugXml
+from .models import Drug
 
-class DrugXmlSerializer(serializers.ModelSerializer):
+class DrugSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DrugXml
-        fields = ('id', 'name', 'content')
+        model = Drug
+        fields = ('primarykey', 'name')

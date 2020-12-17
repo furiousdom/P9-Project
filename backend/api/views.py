@@ -1,10 +1,10 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from rest_framework import generics
-from .serializers import DrugXmlSerializer
-from .models import DrugXml
+from .models import Drug
+from .serializers import DrugSerializer
 
 # Create your views here.
-class DrugXmlView(generics.ListAPIView):
-    queryset = DrugXml.objects.all()
-    serializer_class = DrugXmlSerializer
+
+class DrugView(generics.ListAPIView):
+    queryset = Drug.objects.all()
+    serializer_class = DrugSerializer
