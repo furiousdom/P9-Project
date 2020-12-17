@@ -9,9 +9,8 @@ node_modules
 dist/
 build/
 
-# User defined
-backend/data
-alexParser.py
+# Storage
+data/
 
 .DS_Store
 *.sqlite3
