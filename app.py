@@ -24,6 +24,8 @@ featurize_molecules(prompt1, prompt2)
 toc = time.perf_counter()
 print(f"Execution time: {toc - tic} seconds")
 
+#Tested on an i5-6600k (4 cores) overclocked to 4.1GHz.
+
 # rdkit: 215.2466 seconds   For the first 10 values.  Only featurization
 # convmol: 56.6997295 seconds..  Only featurization
 # circprint: 61.857619099999994 seconds.  Only featurization
