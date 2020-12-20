@@ -3,10 +3,11 @@
     <v-row no-gutters>
       <v-col v-for="drug in drugs" :key="drug.primary_id" cols="3">
         <v-card height="500" outlined>
-          <v-card-title class="blue-grey lighten-5">
+          <v-card-title class="d-flex align-center blue-grey lighten-5">
+            <v-badge :content="drugs.indexOf(drug) + 1" color="indigo" />
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <span v-on="on" v-bind="attrs">{{ truncate(drug.name, 19) }}</span>
+                <span v-on="on" v-bind="attrs">{{ truncate(drug.name, 17) }}</span>
               </template>
               <span>{{ drug.name }}</span>
             </v-tooltip>
@@ -15,7 +16,7 @@
             max-height="150"
             max-width="150"
             src="@/assets/chem-structure-sample.webp" />
-          <v-row class="pa-4" no-gutters>
+          <v-row no-gutters class="pa-4">
             <v-col v-for="prop in drug.eprops" :key="prop.kind" cols="6">
               <v-list-item two-line>
                 <v-list-item-content>
@@ -63,6 +64,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .v-badge {
+  margin: 0.625rem 1.5rem 0 0;
+}
 .v-sheet.v-card {
   border-radius: 0;
 

@@ -1,10 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-navigation-drawer v-model="drawer" app />
-    <v-app-bar app>
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-toolbar-title>Application</v-toolbar-title>
-    </v-app-bar>
+    <drawer />
     <v-main>
       <catalog />
     </v-main>
@@ -13,11 +9,15 @@
 
 <script>
 import Catalog from './components';
+import Drawer from './components/drawer';
 
 export default {
   name: 'app',
-  data: () => ({ drawer: false }),
-  components: { Catalog }
+  data: () => ({ drawer: null }),
+  components: {
+    Catalog,
+    Drawer
+  }
 };
 
 </script>
