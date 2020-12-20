@@ -8,5 +8,5 @@ from .serializers import MainTableSerializer
 # Create your views here.
 
 class DrugView(generics.ListAPIView):
-    queryset = MainTable.objects.select_related('props')[:10]
+    queryset = MainTable.objects.select_related('cprops', 'eprops')[:10]
     serializer_class = MainTableSerializer

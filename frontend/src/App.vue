@@ -16,7 +16,7 @@ import Catalog from './components';
 
 export default {
   name: 'app',
-  data: () => ({ drawer: null }),
+  data: () => ({ drawer: false }),
   components: { Catalog }
 };
 

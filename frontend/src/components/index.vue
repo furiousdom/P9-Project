@@ -16,11 +16,11 @@
             max-width="150"
             src="@/assets/chem-structure-sample.webp" />
           <v-row class="pa-4" no-gutters>
-            <v-col v-for="propName in Object.keys(drugSample.properties)" :key="propName" cols="6">
+            <v-col v-for="prop in drug.eprops" :key="prop.kind" cols="6">
               <v-list-item two-line>
                 <v-list-item-content>
-                  <v-list-item-title>{{ propName }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ drugSample.properties[propName] }}</v-list-item-subtitle>
+                  <v-list-item-title>{{ prop.kind }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ prop.value }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
             </v-col>
@@ -43,10 +43,20 @@ export default {
     drugs: null
   }),
   methods: {
-    truncate: (name, length) => truncate(name, { length })
+    truncate: (name, length) => truncate(name, { length }),
+    parseJsonProps(drugs) {
+      drugs.forEach(drug => {
+        const cprops = JSON.parse(drug.cprops)['calculated-properties'];
+        const eprops = JSON.parse(drug.eprops)['experimental-properties'];
+        if (cprops) drug.cprops = cprops.property;
+        else drug.cprops = null;
+        if (eprops) drug.eprops = eprops.property;
+      });
+    }
   },
   async mounted() {
     const { data } = await api.fetch();
+    this.parseJsonProps(data);
     this.drugs = data;
   }
 };
