@@ -63,35 +63,6 @@ class GroupsTable(models.Model):
         db_table = 'groups_table'
 
 
-class MainTable(models.Model):
-    primary_id = models.CharField(primary_key=True, max_length=20)
-    name = models.TextField(blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    cas_number = models.CharField(max_length=20, blank=True, null=True)
-    unii = models.CharField(max_length=20, blank=True, null=True)
-    state = models.TextField(blank=True, null=True)
-    indication = models.TextField(blank=True, null=True)
-    pharmacodynamics = models.TextField(blank=True, null=True)
-    mechanism = models.TextField(blank=True, null=True)
-    toxicity = models.TextField(blank=True, null=True)
-    metabolism = models.TextField(blank=True, null=True)
-    absorbtion = models.TextField(blank=True, null=True)
-    halflife = models.TextField(blank=True, null=True)
-    protein_binding = models.TextField(blank=True, null=True)
-    route_of_elimination = models.TextField(blank=True, null=True)
-    volume_of_distribution = models.TextField(blank=True, null=True)
-    clearance = models.TextField(blank=True, null=True)
-    classification = models.TextField(blank=True, null=True)  # This field type is a guess.
-    fda_label = models.TextField(blank=True, null=True)
-    msds = models.TextField(blank=True, null=True)
-    reactions = models.TextField(blank=True, null=True)  # This field type is a guess.
-    snp_effects = models.TextField(blank=True, null=True)  # This field type is a guess.
-
-    class Meta:
-        managed = False
-        db_table = 'main_table'
-
-
 class MixturesTable(models.Model):
     pkey = models.AutoField(primary_key=True)
     drug_id = models.CharField(max_length=20, blank=True, null=True)
@@ -140,16 +111,6 @@ class ProductsTable(models.Model):
         db_table = 'products_table'
 
 
-class PropertiesTable(models.Model):
-    pkey = models.AutoField(primary_key=True)
-    drug_id = models.CharField(max_length=20, blank=True, null=True)
-    properties = models.TextField(blank=True, null=True)  # This field type is a guess.
-
-    class Meta:
-        managed = False
-        db_table = 'properties_table'
-
-
 class SecondaryIdsTable(models.Model):
     pkey = models.AutoField(primary_key=True)
     primary_id = models.CharField(max_length=20, blank=True, null=True)
@@ -188,3 +149,45 @@ class TargetsTable(models.Model):
     class Meta:
         managed = False
         db_table = 'targets_table'
+
+
+class MainTable(models.Model):
+    primary_id = models.CharField(primary_key=True, max_length=20)
+    name = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    cas_number = models.CharField(max_length=20, blank=True, null=True)
+    unii = models.CharField(max_length=20, blank=True, null=True)
+    state = models.TextField(blank=True, null=True)
+    indication = models.TextField(blank=True, null=True)
+    pharmacodynamics = models.TextField(blank=True, null=True)
+    mechanism = models.TextField(blank=True, null=True)
+    toxicity = models.TextField(blank=True, null=True)
+    metabolism = models.TextField(blank=True, null=True)
+    absorbtion = models.TextField(blank=True, null=True)
+    halflife = models.TextField(blank=True, null=True)
+    protein_binding = models.TextField(blank=True, null=True)
+    route_of_elimination = models.TextField(blank=True, null=True)
+    volume_of_distribution = models.TextField(blank=True, null=True)
+    clearance = models.TextField(blank=True, null=True)
+    classification = models.TextField(blank=True, null=True)  # This field type is a guess.
+    fda_label = models.TextField(blank=True, null=True)
+    msds = models.TextField(blank=True, null=True)
+    reactions = models.TextField(blank=True, null=True)  # This field type is a guess.
+    snp_effects = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'main_table'
+
+
+class PropertiesTable(models.Model):
+    pkey = models.AutoField(primary_key=True)
+    drug = models.OneToOneField(max_length=20, unique=True, to=MainTable, related_name='props', on_delete=models.CASCADE)
+    properties = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'properties_table'
+
+    def __str__(self):
+        return '%s' % (self.properties)
