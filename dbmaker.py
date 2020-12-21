@@ -45,6 +45,7 @@ def getXML(node, arg):
     except Exception as e:
         exc(e)
         return ""
+        # return f'<{arg}/>' Uncomment only when creating Calculated Properties Table
 
 # Parse into ElementTree tree
 print("Starting Parsing")
@@ -427,6 +428,30 @@ def createProperties():
 
     print(f"We have encountered {errors} errors during the upload.")
 
+# CREATE Calculated Properties
+def createCalcProperties():
+    # Iterate over all children
+    iterator = 1
+    errors = 0
+    for child in root:
+        nametech = child.find(xmlns + "name")
+
+        # MAIN TABLE INSERT
+        primary_id = getText(child, "drugbank-id")
+        properties = getXML(child, "calculated-properties")
+
+        sqlInsertRow1 = f"INSERT INTO calc_properties_table values($${iterator}$$,$${primary_id}$$,$${properties}$$)"
+        log2q(sqlInsertRow1)
+        try:
+            dbCursor.execute(sqlInsertRow1)
+            dbSession.commit()
+            iterator += 1
+        except Exception as e:
+            errors += 1
+            print(f"Error in {nametech} insertion.{exc(e)}")
+
+    print(f"We have encountered {errors} errors during the upload.")
+
 # CREATE PATHWAYS
 def createPathways():
     # Iterate over all children
@@ -532,5 +557,14 @@ def createTargets():
 # print('Creating Targets table...')
 # createTargets()
 # print('Finished creating Targets table...')
+
+# TODO: Before running:
+# modify the exception in getXML function,
+# comment the return of empty string and uncomment the line below it.
+# When done return the function the way it was!
+
+# print('Creating Calculates Properties table...')
+# createCalcProperties()
+# print('Finished creating Calculates Properties table...')
 
 print("Dunzo")
