@@ -35,4 +35,5 @@ print(f"Execution time: {toc - tic} seconds")
 # KNNmol2vec: 73.5418805 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list.
 # manmol2vec: 106.32661039999999 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list.
 # simmol2vec: 568.5501368 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list.
-# minmol2vec: 63.571768500000005 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list.
+# minmol2vec: 63.571768500000005 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list. 2nd order
+# minmol2vec: 72.3060886 seconds. Target molecule set size = 20. Performs featurization, finds distance, sorts a list. 1st order
