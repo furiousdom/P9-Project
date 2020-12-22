@@ -13,7 +13,6 @@ import Drawer from './components/drawer';
 
 export default {
   name: 'app',
-  data: () => ({ drawer: null }),
   components: {
     Catalog,
     Drawer

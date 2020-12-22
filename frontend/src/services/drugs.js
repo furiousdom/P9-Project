@@ -1,11 +1,16 @@
 import api from './request';
 
 const urls = {
-  root: '/drugs'
+  root: '/drugs',
+  search: '/search/'
 };
 
 function fetch() {
   return api.get(urls.root);
 }
 
-export default { fetch };
+function search(params) {
+  return api.post(`${urls.root}${urls.search}`, params);
+}
+
+export default { fetch, search };
