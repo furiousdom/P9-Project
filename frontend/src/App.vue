@@ -1,6 +1,5 @@
 <template>
   <v-app id="inspire">
-    <drawer />
     <v-main>
       <catalog />
     </v-main>
@@ -8,15 +7,11 @@
 </template>
 
 <script>
-import Catalog from './components';
-import Drawer from './components/drawer';
+import Catalog from './components/Catalog';
 
 export default {
   name: 'app',
-  components: {
-    Catalog,
-    Drawer
-  }
+  components: { Catalog }
 };
 
 </script>

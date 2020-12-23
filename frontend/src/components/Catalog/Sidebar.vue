@@ -15,21 +15,22 @@
       <v-divider />
       <v-list-item>
         <v-list-item-content>
-          <form>
+          <v-form ref="form" v-model="valid">
             <v-text-field
               v-model="proteinName"
-              :error-messages="nameErrors"
+              :rules="proteinNameRules"
+              :error-messages="proteinNameErrors"
               label="Name"
-              outlined
-              required />
+              required
+              outlined />
 
-            <v-btn @click="submit" class="mr-4">
+            <v-btn @click="submit" :disabled="!valid" class="mr-4">
               submit
             </v-btn>
-            <v-btn @click="clear">
+            <v-btn @click="reset">
               clear
             </v-btn>
-          </form>
+          </v-form>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -40,16 +41,29 @@
 import api from '@/services/drugs';
 
 export default {
-  name: 'drawer',
-  data: () => ({ proteinName: '', nameErrors: null }),
+  name: 'sidebar',
+  data: () => ({
+    valid: true,
+    proteinName: '',
+    proteinNameRules: [name => !!name || 'Name is required'],
+    proteinNameErrors: null
+  }),
   methods: {
-    clear() {
-      this.proteinName = '';
+    validate() {
+      this.$refs.form.validate();
+    },
+    reset() {
+      this.$refs.form.reset();
+    },
+    resetValidation() {
+      this.$refs.form.resetValidation();
     },
     submit() {
-      const proteinName = this.proteinName;
-      if (proteinName === '') this.nameErrors = 'The protein must have a name.';
-      else api.search({ proteinName }).then(({ data }) => console.log(data));
+      const { proteinName } = this;
+      api.search({ proteinName })
+        .then(({ data }) => {
+          this.$emit('submit', data);
+        });
     }
   }
 };

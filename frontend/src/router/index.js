@@ -1,4 +1,4 @@
-import Catalog from '../components';
+import Catalog from '../components/Catalog';
 import Vue from 'vue';
 import VueRouter from 'vue-router';
 

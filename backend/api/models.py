@@ -206,3 +206,16 @@ class CalcPropertiesTable(models.Model):
 
     def __str__(self):
         return '%s' % (dumps(parse(self.properties)))
+
+
+class FeaturesTable(models.Model):
+    pkey = models.AutoField(primary_key=True)
+    drug = models.OneToOneField(max_length=20, unique=True, to=MainTable, related_name='features', on_delete=models.CASCADE)
+    features = models.TextField(blank=True, null=True)  # This field type is a guess.
+
+    class Meta:
+        managed = False
+        db_table = 'features_table'
+
+    def __str__(self):
+        return '%s' % (self.features)

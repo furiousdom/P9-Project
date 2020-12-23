@@ -1,10 +1,11 @@
 <template>
   <v-container>
+    <sidebar @submit="sidebarSearch" />
     <v-row no-gutters>
       <v-col v-for="drug in drugs" :key="drug.primary_id" cols="3">
         <v-card height="500" outlined>
           <v-card-title class="d-flex align-center blue-grey lighten-5">
-            <v-badge :content="drugs.indexOf(drug) + 1" color="indigo" />
+            <!-- <v-badge :content="drugs.indexOf(drug) + 1" color="indigo" /> -->
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
                 <span v-on="on" v-bind="attrs">{{ truncate(drug.name, 17) }}</span>
@@ -35,6 +36,7 @@
 <script>
 import api from '@/services/drugs';
 import drugSample from '@/assets/drugSample';
+import Sidebar from './Sidebar';
 import truncate from 'lodash/truncate';
 
 export default {
@@ -52,14 +54,27 @@ export default {
         if (cprops) drug.cprops = cprops.property;
         else drug.cprops = null;
         if (eprops) drug.eprops = eprops.property;
+        // if (eprops) {
+        //   console.log(`Array = ${Array.isArray(eprops.property)}`);
+        //   if (Array.isArray(eprops.property)) drug.eprops = eprops.property;
+        //   else drug.eprops = [eprops.property];
+        // }
       });
+    },
+    sidebarSearch(data) {
+      console.log(data.data);
+      this.parseJsonProps(data.data);
+      // console.log(data.data);
+      this.drugs = data.data;
     }
   },
   async mounted() {
     const { data } = await api.fetch();
     this.parseJsonProps(data);
     this.drugs = data;
-  }
+    console.log(data);
+  },
+  components: { Sidebar }
 };
 </script>
 
