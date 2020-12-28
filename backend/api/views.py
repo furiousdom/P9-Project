@@ -7,6 +7,7 @@ from .serializers import MainTableSerializer
 import numpy
 import xmltodict
 import deepchem as dc
+from scipy.spatial import distance
 
 # Create your views here.
 
@@ -28,11 +29,13 @@ class Drugs(APIView):
     def post(self, request):
         if request.data:
             proteinName = request.data['proteinName']
+            noCandidates = request.data['noCandidates']
             protein = self.findDrug(name = proteinName)
-            queryset = self.findInteractionsById(protein.primary_id)[:10]
+            queryset = self.findInteractionsById(protein.primary_id)
             # interactingFeatures = [FeaturesTable.objects.filter(drug_id = q.drug_id_2) for q in queryset]
             calcProps = [CalcPropertiesTable.objects.get(drug_id = q.drug_id_2) for q in queryset]
-            turntoobject(calcProps)
+            allProps = CalcPropertiesTable.objects.all()
+            turntoobject(calcProps, allProps, noCandidates)
             return Response({ "message": "FU" })
         return Response({ "error": "No data in the request!" })
 
@@ -48,24 +51,54 @@ class Drugs(APIView):
     def findInteractionsById(self, id):
         return DrugInteractionsTable.objects.filter(drug_id_1 = id)
 
-def turntoobject(calcProps):
+def turntoobject(calcProps, allProps, noCandidates):
     my_list = []
     smiles_list = []
     for entry in calcProps:
         my_list.append(xmltodict.parse(entry.properties))
     for entry in my_list:
         val = ''
-        for prop in entry['calculated-properties']['property']:
-            if prop['kind'] == 'SMILES':
-                val = prop['value']
-        smiles_list.append(val)
-    KNNmol2VecFeaturization(smiles_list)
+        if 'calculated-properties' in entry.keys():
+            # if entry['calculated-properties'] is None:
+                # print(entry['calculated-properties'])
+            # else:
+            try:
+                if len(entry['calculated-properties'].keys()) >= 1:
+                    # print(len(entry['calculated-properties'].keys()))
+                    for prop in entry['calculated-properties']['property']:
+                        if prop['kind'] == 'SMILES':
+                            val = prop['value']
+                            smiles_list.append(val)
+            except Exception as error:
+                print(error)
 
-# def helper(interactingFeatures):
-#     features = []
-#     for entry in interactingFeatures:
-#         features.append(numpy.fromstring(entry.features, sep=' '))
-#     KNNmol2VecFeaturization(features)
+    all_my_list = []
+    all_smiles_list = []
+    for entry in allProps:
+        all_my_list.append(xmltodict.parse(entry.properties))
+    for entry in all_my_list:
+        val = ''
+        if 'calculated-properties' in entry.keys():
+            # if entry['calculated-properties'] is None:
+                # print(entry['calculated-properties'])
+            # else:
+            try:
+                if len(entry['calculated-properties'].keys()) >= 1:
+                    # print(len(entry['calculated-properties'].keys()))
+                    for prop in entry['calculated-properties']['property']:
+                        if prop['kind'] == 'SMILES':
+                            val = prop['value']
+                            all_smiles_list.append(val)
+            except Exception as error:
+                print(error)
+
+    
+    print("Starting the featurization...")
+    # Make it possible for the user to select what distance algorithm they want to use.
+    # KNNmol2VecFeaturization(smiles_list, all_smiles_list, noCandidates)
+    # Manhattanmol2VecFeaturization(smiles_list, all_smiles_list, noCandidates)
+    # Simmol2VecFeaturization(smiles_list, all_smiles_list, noCandidates)
+    Minkowskimol2VecFeaturization(smiles_list, all_smiles_list, noCandidates)
 
 def helper():
     pass
@@ -75,30 +108,120 @@ class molecule: #This class is used to store objects in an array. Just holds the
         self.average_distance = average_distance
         self.name = name
 
-def KNNmol2VecFeaturization(smiles):
+def KNNmol2VecFeaturization(smiles, allsmiles, noCandidates):
     featurizer = dc.feat.Mol2VecFingerprint()
+    allsmiles = list(set(allsmiles) - set(smiles))
     features = featurizer(smiles)
+    all_features = featurizer(allsmiles)
     print(f'Number of featurized items: {len(features)} \nValues:')
-    print(f'Length of features: {len(features)}')
-    i = 20 #Just taking the first 20 molecules as my initial set. Need to change this to be the initial molecule set instead. Create the set by cutting it from the complete list.
+    print(f'Length of features: {len(features)}')   
+    i = 0 
     k = 0
-
     combinedtempdistance = 0
     moleculelist = []
-    while i<len(features):
-        while k<20:
-            if (len(features[k])!=0 and len(features[i])!=0):
-                combinedtempdistance = combinedtempdistance + numpy.linalg.norm(features[k]-features[i])
+    while i<len(all_features):
+        while k<len(features):
+            if (len(features[k])!=0 and len(all_features[i])!=0):
+                combinedtempdistance = combinedtempdistance + numpy.linalg.norm(features[k]-all_features[i])
                 k=k+1
             else:
-                print('A molecule could not be featurized. Skipping ahead to next molecule.')
+                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
                 k=k+1
-        combinedtempdistance = combinedtempdistance / 20 #20 should be replaced by len(list of initial molecules)
+        combinedtempdistance = combinedtempdistance / len(features)
         Molecule = molecule(combinedtempdistance, i) #Might want to use the actual name instead of just its number in the index.
         moleculelist.append(Molecule) #Index of array is same as the molecule number.
         combinedtempdistance = 0
         i=i+1
         k=0
     moleculelist.sort(key=lambda x: x.average_distance)
+    for mole in moleculelist:
+        print(mole.average_distance)
+
+def Manhattanmol2VecFeaturization(smiles, allsmiles, noCandidates):#Needs packages that are incompatible I think.
+    featurizer = dc.feat.Mol2VecFingerprint()
+    allsmiles = list(set(allsmiles) - set(smiles))
+    features = featurizer(smiles)
+    all_features = featurizer(allsmiles)
+    print(f'Number of featurized items: {len(features)} \nValues:')
+    print(f'Length of features: {len(features)}')
+    i = 0
+    k = 0
+    combinedtempdistance = 0
+    moleculelist = []
+    while i<len(all_features):
+        while k<len(features):       
+            if (len(features[k])!=0 and len(all_features[i])!=0):            
+                for x in range(0,300):
+                    combinedtempdistance = combinedtempdistance + abs(features[k][x]-all_features[i][x])
+                k=k+1
+            else:
+                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
+                k=k+1
+        combinedtempdistance = combinedtempdistance / len(features)
+        Molecule = molecule(combinedtempdistance, i) #Might want to use the actual name instead of just its number in the index.
+        moleculelist.append(Molecule) #Index of array is same as the molecule number.
+        combinedtempdistance = 0
+        i=i+1
+        k=0
+    moleculelist.sort(key=lambda x: x.average_distance)
+    for mole in moleculelist:
+        print(mole.average_distance)
+
+def Simmol2VecFeaturization(smiles, allsmiles, noCandidates):#Needs packages that are incompatible I think.
+    featurizer = dc.feat.Mol2VecFingerprint()
+    allsmiles = list(set(allsmiles) - set(smiles))
+    features = featurizer(smiles)
+    all_features = featurizer(allsmiles)
+    print(f'Number of featurized items: {len(features)} \nValues:')
+    print(f'Length of features: {len(features)}')
+    i = 0
+    k = 0
+    combinedtempdistance = 0
+    moleculelist = []
+    while i<len(all_features):
+        while k<len(features):       
+            if (len(features[k])!=0 and len(all_features[i])!=0):            
+                for x in range(0,300):
+                    combinedtempdistance = combinedtempdistance + ((features[k][x] * all_features[i][x]) / ((features[k][x] * all_features[i][x]) + (features[k][x] - all_features[i][x])**2))
+                k=k+1
+            else:
+                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
+                k=k+1
+        combinedtempdistance = combinedtempdistance / len(features)
+        Molecule = molecule(combinedtempdistance, i) #Might want to use the actual name instead of just its number in the index.
+        moleculelist.append(Molecule) #Index of array is same as the molecule number.
+        combinedtempdistance = 0
+        i=i+1
+        k=0
+    moleculelist.sort(key=lambda x: x.average_distance, reverse=True)#Higher is better for this method. 
+    for mole in moleculelist:
+        print(mole.average_distance)
+
+def Minkowskimol2VecFeaturization(smiles, allsmiles, noCandidates):#Needs packages that are incompatible I think.
+    featurizer = dc.feat.Mol2VecFingerprint()
+    allsmiles = list(set(allsmiles) - set(smiles))
+    features = featurizer(smiles)
+    all_features = featurizer(allsmiles)
+    print(f'Number of featurized items: {len(features)} \nValues:')
+    print(f'Length of features: {len(features)}')
+    i = 0
+    k = 0
+    combinedtempdistance = 0
+    moleculelist = []
+    while i<len(all_features):
+        while k<len(features):       
+            if (len(features[k])!=0 and len(all_features[i])!=0):            
+                combinedtempdistance = combinedtempdistance + distance.minkowski(features[k], all_features[i],2) # 2nd order. Needs to be changed to be set by the user.
+                k=k+1
+            else:
+                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
+                k=k+1
+        combinedtempdistance = combinedtempdistance / len(features)
+        Molecule = molecule(combinedtempdistance, i) #Might want to use the actual name instead of just its number in the index.
+        moleculelist.append(Molecule) #Index of array is same as the molecule number.
+        combinedtempdistance = 0
+        i=i+1
+        k=0
+    moleculelist.sort(key=lambda x: x.average_distance) 
     for mole in moleculelist:
         print(mole.average_distance)
