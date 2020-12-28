@@ -34,8 +34,9 @@ class Drugs(APIView):
             queryset = self.findInteractionsById(protein.primary_id)
             calcProps = [CalcPropertiesTable.objects.get(drug_id = q.drug_id_2) for q in queryset]
             allProps = CalcPropertiesTable.objects.all()
-            knn(calcProps, allProps, noCandidates)
-            return Response({ "success": "OK" })
+            candidateMolecules = knn(calcProps, allProps, noCandidates)
+            candidates = [self.getSerializedDrug(c.id).data for c in candidateMolecules]
+            return Response({ "data": candidates })
         return Response({ "error": "No data in the request!" })
 
     def getSerializedDrug(self, id=''):
@@ -72,17 +73,73 @@ def xmlToSmiles(xml):
                 print(error)
     return smiles_list
 
+
+def xmlToProps(dbObjects):
+    moleculeList = []
+    for entry in dbObjects:
+        props = xmltodict.parse(entry.properties)
+        if 'calculated-properties' in props.keys():
+            try:
+                if len(props['calculated-properties'].keys()) >= 1:
+                    # print(len(entry['calculated-properties'].keys()))
+                    for prop in props['calculated-properties']['property']:
+                        if prop['kind'] == 'SMILES':
+                            val = prop['value']
+                            moleculeList.append(Molecule(id=entry.drug_id, smiles=val))
+            except Exception as error:
+                print(error)
+    return moleculeList
+
+# def knn(calcProps, allProps, noCandidates):
+#     interactingSmiles = xmlToSmiles(calcProps)
+#     allSmiles = xmlToSmiles(allProps)
+
+#     print("Starting the featurization...")
+#     knn_helper(interactingSmiles, allSmiles, noCandidates)
+
 def knn(calcProps, allProps, noCandidates):
-    interactingSmiles = xmlToSmiles(calcProps)
-    allSmiles = xmlToSmiles(allProps)
+    interactingMolecules = xmlToProps(calcProps)
+    allMolecules = xmlToProps(allProps)
 
     print("Starting the featurization...")
-    knn_helper(interactingSmiles, allSmiles, noCandidates)
+    return knn_helper2(interactingMolecules, allMolecules, noCandidates)
 
 class Molecule: #This class is used to store objects in an array. Just holds the average distance for now.
-    def __init__(self, average_distance, smiles):
-        self.average_distance = average_distance
+    def __init__(self, id=None, smiles=None, average_distance=None):
+        self.id = id
         self.smiles = smiles
+        self.average_distance = average_distance
+
+def removeDuplicates(interactingMolecules, allMolecules):
+    for mol in allMolecules:
+        for interactingMol in interactingMolecules:
+            if mol.smiles == interactingMol.smiles:
+                allMolecules.remove(mol)
+    return allMolecules
+
+def knn_helper2(interactingMolecules, allMolecules, noCandidates):
+    allMolecules = removeDuplicates(interactingMolecules, allMolecules)
+    featurizer = dc.feat.Mol2VecFingerprint()
+    interactingMolFeatures = featurizer([im.smiles for im in interactingMolecules])
+    allMolFeatures = featurizer([m.smiles for m in allMolecules])
+    i = 0
+    k = 0
+    combinedtempdistance = 0
+    while i<len(allMolFeatures):
+        while k<len(interactingMolFeatures):
+            if (len(interactingMolFeatures[k])!=0 and len(allMolFeatures[i])!=0):
+                combinedtempdistance = combinedtempdistance + euclideanDistance(interactingMolFeatures[k], allMolFeatures[i])
+                k=k+1
+            else:
+                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
+                k=k+1
+        combinedtempdistance = combinedtempdistance / len(interactingMolFeatures)
+        allMolecules[i].average_distance = combinedtempdistance
+        combinedtempdistance = 0
+        i=i+1
+        k=0
+    allMolecules.sort(key=lambda x: x.average_distance)
+    return allMolecules[:noCandidates]
 
 def knn_helper(interactingSmiles, allSmiles, noCandidates):
     allSmiles = list(set(allSmiles) - set(interactingSmiles))
