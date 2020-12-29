@@ -62,10 +62,9 @@ export default {
       });
     },
     sidebarSearch(data) {
-      console.log(data.data);
-      this.parseJsonProps(data.data);
-      // console.log(data.data);
-      this.drugs = data.data;
+      console.log(data);
+      this.parseJsonProps(data);
+      this.drugs = data;
     }
   },
   async mounted() {

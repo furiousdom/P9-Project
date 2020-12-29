@@ -18,11 +18,18 @@
           <v-form ref="form" v-model="valid">
             <v-text-field
               v-model="proteinName"
-              :rules="proteinNameRules"
-              :error-messages="proteinNameErrors"
+              :rules="rules.proteinName"
               label="Name"
               required
               outlined />
+            <v-text-field
+              v-model.number="noResults"
+              :rules="rules.noResults"
+              type="number"
+              label="No. of Results" />
+            <v-checkbox
+              v-model="logging"
+              label="Enable Logging" />
 
             <v-btn @click="submit" :disabled="!valid" class="mr-4">
               submit
@@ -45,8 +52,12 @@ export default {
   data: () => ({
     valid: true,
     proteinName: '',
-    proteinNameRules: [name => !!name || 'Name is required'],
-    proteinNameErrors: null
+    logging: false,
+    noResults: 1,
+    rules: {
+      proteinName: [name => !!name || 'Name is required.'],
+      noResults: [val => val > 0 || 'Must be a non-negative number.']
+    }
   }),
   methods: {
     validate() {
@@ -54,13 +65,14 @@ export default {
     },
     reset() {
       this.$refs.form.reset();
+      this.logging = false;
     },
     resetValidation() {
       this.$refs.form.resetValidation();
     },
     submit() {
-      const { proteinName } = this;
-      api.search({ proteinName })
+      const { proteinName, noResults, logging } = this;
+      api.search({ proteinName, noResults, logging })
         .then(({ data }) => {
           this.$emit('submit', data);
         });
