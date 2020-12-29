@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import CalcPropertiesTable, DrugInteractionsTable, MainTable
 from .serializers import MainTableSerializer
 
-import numpy
+import numpy as np
 import xmltodict
 import deepchem as dc
 from scipy.spatial import distance
@@ -111,8 +111,8 @@ class Molecule: #This class is used to store objects in an array. Just holds the
         self.average_distance = average_distance
 
 def removeDuplicates(interactingMolecules, allMolecules):
-    for mol in allMolecules:
-        for interactingMol in interactingMolecules:
+    for interactingMol in interactingMolecules:  
+        for mol in allMolecules:
             if mol.smiles == interactingMol.smiles:
                 allMolecules.remove(mol)
     return allMolecules
@@ -131,7 +131,8 @@ def knn_helper2(interactingMolecules, allMolecules, noCandidates):
                 combinedtempdistance = combinedtempdistance + euclideanDistance(interactingMolFeatures[k], allMolFeatures[i])
                 k=k+1
             else:
-                print(f'i:{i} K:{k} A molecule could not be featurized. Skipping ahead to next molecule.')
+                print(f'Interacting: {interactingMolecules[k].id} has length: {len(interactingMolFeatures[k])}')
+                print(f'Molecule: {allMolecules[i].id} has length: {len(allMolFeatures[i])}')
                 k=k+1
         combinedtempdistance = combinedtempdistance / len(interactingMolFeatures)
         allMolecules[i].average_distance = combinedtempdistance
@@ -139,7 +140,43 @@ def knn_helper2(interactingMolecules, allMolecules, noCandidates):
         i=i+1
         k=0
     allMolecules.sort(key=lambda x: x.average_distance)
+    # writing(interactingMolecules, allMolecules)
+    check(interactingMolecules, allMolecules)
     return allMolecules[:noCandidates]
+
+def check(interactingMolecules, allMolecules):
+    counter = 0
+    for i in interactingMolecules:
+        for a in allMolecules:
+            if i.id == a.id:
+                counter = counter + 1
+    print(counter)
+
+
+def writing(interactingMolecules, allMolecules):
+    f = open("interacting.txt", "w")
+    for interactingMol in interactingMolecules:
+        f.write(f'{interactingMol.id}\n')
+    f.close()
+
+    f = open("molecules.txt", "w")
+    for mol in allMolecules:
+        f.write(f'{mol.id}: {mol.average_distance}\n')
+    f.close()
+
+def reading():
+    interacting = []
+    f = open("interacting.txt", "r")
+    for line in f:
+        interacting.append(line)
+    f.close()
+
+    molecules = []
+    f = open("molecules.txt", "r")
+    for line in f:
+        molecules.append(line)
+    f.close()
+
 
 def knn_helper(interactingSmiles, allSmiles, noCandidates):
     allSmiles = list(set(allSmiles) - set(interactingSmiles))
@@ -170,7 +207,7 @@ def knn_helper(interactingSmiles, allSmiles, noCandidates):
     print(f'No Candidates: {noCandidates}')
 
 def euclideanDistance(interactingMoleculeFeature, moleculeFeature):
-    return numpy.linalg.norm(interactingMoleculeFeature-moleculeFeature)
+    return np.linalg.norm(interactingMoleculeFeature-moleculeFeature)
 
 def manhattanDistance(interactingMoleculeFeature, moleculeFeature):
     sum = 0
