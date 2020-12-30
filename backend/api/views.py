@@ -1,7 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import CalcPropertiesTable, DrugInteractionsTable, MainTable
+from .models import CalcPropertiesTable, DrugInteractionsTable, FeaturesTable, MainTable
 from .serializers import MainTableSerializer
 
 from .algorithm import knn
@@ -9,7 +9,9 @@ from .algorithm import knn
 # Create your views here.
 
 class DrugView(generics.ListAPIView):
-    queryset = MainTable.objects.select_related('cprops', 'eprops')[:12]
+    featureObjects = FeaturesTable.objects.all()[:12]
+    featureIds = [featureObject.drug_id for featureObject in featureObjects]
+    queryset = MainTable.objects.filter(primary_id__in=featureIds)
     serializer_class = MainTableSerializer
 
 class Drugs(APIView):
