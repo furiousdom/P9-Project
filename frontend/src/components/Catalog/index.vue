@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <sidebar @submit="sidebarSearch" />
+    <sidebar @submit="setData" />
     <v-row no-gutters>
       <v-col v-for="drug in drugs" :key="drug.primary_id" cols="3">
         <v-card height="500" outlined>
@@ -18,7 +18,10 @@
             max-width="150"
             src="@/assets/chem-structure-sample.webp" />
           <v-row no-gutters class="pa-4">
-            <v-col v-for="prop in drug.cprops" :key="prop.kind" cols="6">
+            <v-col
+              v-for="(prop, index) in drug.cprops"
+              :key="`${prop.kind}-${index}`"
+              cols="6">
               <v-list-item two-line>
                 <v-list-item-content>
                   <v-tooltip bottom>
@@ -40,52 +43,22 @@
 
 <script>
 import api from '@/services/drugs';
+import parseJsonProps from '@/services/helper';
 import Sidebar from './Sidebar';
 import truncate from 'lodash/truncate';
 
 export default {
   name: 'catalog',
-  data: () => ({
-    drugs: null,
-    pertinentProps: [
-      'logP',
-      'logS',
-      'Water Solubility',
-      'Molecular Weight',
-      'Polar Surface Area (PSA)',
-      'Refractivity'
-    ]
-  }),
+  data: () => ({ drugs: null }),
   methods: {
     truncate: (name, length) => truncate(name, { length }),
-    parseJsonProps(drugs) {
-      drugs.forEach(drug => {
-        const cprops = JSON.parse(drug.cprops)['calculated-properties'];
-        if (cprops) drug.cprops = this.approvedProps(cprops);
-        else drug.cprops = null;
-      });
-    },
-    approvedProps(cprops) {
-      const source = 'ALOGPS';
-      const logP = this.pertinentProps[0];
-      return cprops.property.filter(prop => {
-        if (this.pertinentProps.includes(prop.kind)) {
-          if (prop.kind !== logP) return true;
-          else if (prop.source === source) return true;
-          else return false;
-        }
-        return false;
-      });
-    },
-    sidebarSearch(data) {
-      this.parseJsonProps(data);
-      this.drugs = data;
+    setData(data) {
+      this.drugs = parseJsonProps(data);
     }
   },
   async mounted() {
     const { data } = await api.fetch();
-    this.parseJsonProps(data);
-    this.drugs = data;
+    this.setData(data);
   },
   components: { Sidebar }
 };
