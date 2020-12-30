@@ -19,12 +19,8 @@ def xmlToSmiles(xml):
     for entry in temp_list:
         val = ''
         if 'calculated-properties' in entry.keys():
-            # if entry['calculated-properties'] is None:
-                # print(entry['calculated-properties'])
-            # else:
             try:
                 if len(entry['calculated-properties'].keys()) >= 1:
-                    # print(len(entry['calculated-properties'].keys()))
                     for prop in entry['calculated-properties']['property']:
                         if prop['kind'] == 'SMILES':
                             val = prop['value']
