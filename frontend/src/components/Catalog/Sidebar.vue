@@ -1,9 +1,5 @@
 <template>
-  <v-navigation-drawer
-    permanent
-    app
-    color="grey lighten-2"
-    width="320">
+  <v-navigation-drawer color="grey lighten-2" width="320" permanent app>
     <v-list>
       <v-list-item>
         <v-list-item-content>
@@ -20,23 +16,15 @@
               v-model="proteinName"
               :rules="rules.proteinName"
               label="Name"
-              required
-              outlined />
+              required outlined />
             <v-text-field
               v-model.number="noResults"
               :rules="rules.noResults"
               type="number"
               label="No. of Results" />
-            <v-checkbox
-              v-model="logging"
-              label="Enable Logging" />
-
-            <v-btn @click="submit" :disabled="!valid" class="mr-4">
-              submit
-            </v-btn>
-            <v-btn @click="reset">
-              clear
-            </v-btn>
+            <v-checkbox v-model="logging" label="Enable Logging" />
+            <v-btn @click="submit" :disabled="!valid" class="mr-4">submit</v-btn>
+            <v-btn @click="reset">clear</v-btn>
           </v-form>
         </v-list-item-content>
       </v-list-item>
@@ -70,12 +58,10 @@ export default {
     resetValidation() {
       this.$refs.form.resetValidation();
     },
-    submit() {
+    async submit() {
       const { proteinName, noResults, logging } = this;
-      api.search({ proteinName, noResults, logging })
-        .then(({ data }) => {
-          this.$emit('submit', data);
-        });
+      const { data } = await api.search({ proteinName, noResults, logging });
+      this.$emit('submit', data);
     }
   }
 };

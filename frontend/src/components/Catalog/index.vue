@@ -2,15 +2,20 @@
   <v-container>
     <sidebar @submit="setData" />
     <v-row no-gutters>
-      <v-col v-for="drug in drugs" :key="drug.primary_id" cols="3">
+      <v-col
+        v-for="({ primary_id, name, cprops }, index) in drugs"
+        :key="primary_id"
+        cols="3">
         <v-card height="500" outlined>
           <v-card-title class="d-flex align-center blue-grey lighten-5">
-            <v-badge :content="drugs.indexOf(drug) + 1" color="indigo" />
+            <v-badge :content="index + 1" color="indigo" />
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
-                <span v-on="on" v-bind="attrs">{{ truncate(drug.name, 17) }}</span>
+                <span v-on="name > 17 ? on : null" v-bind="attrs">
+                  {{ truncate(name, 17) }}
+                </span>
               </template>
-              <span>{{ drug.name }}</span>
+              <span>{{ name }}</span>
             </v-tooltip>
           </v-card-title>
           <v-img
@@ -19,17 +24,10 @@
             src="@/assets/chem-structure-sample.webp" />
           <v-row no-gutters class="pa-4">
             <v-col
-              v-for="(prop, index) in drug.cprops"
-              :key="`${prop.kind}-${index}`"
-              cols="6">
+              v-for="prop in cprops" :key="prop.kind" cols="6">
               <v-list-item two-line>
                 <v-list-item-content>
-                  <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                      <span v-on="on" v-bind="attrs">{{ prop.kind }}</span>
-                    </template>
-                    <span>{{ prop.kind }}</span>
-                  </v-tooltip>
+                  <span>{{ prop.kind }}</span>
                   <v-list-item-subtitle>{{ prop.value }}</v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
