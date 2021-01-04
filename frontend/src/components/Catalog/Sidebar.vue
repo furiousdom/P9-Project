@@ -26,6 +26,7 @@
             <v-btn @click="submit" :disabled="!valid" class="mr-4">submit</v-btn>
             <v-btn @click="reset">clear</v-btn>
           </v-form>
+          <v-progress-circular v-if="loading" color="primary" indeterminate />
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -39,6 +40,7 @@ export default {
   name: 'sidebar',
   data: () => ({
     valid: true,
+    loading: false,
     proteinName: '',
     logging: false,
     noResults: 1,
@@ -59,8 +61,10 @@ export default {
       this.$refs.form.resetValidation();
     },
     async submit() {
+      this.loading = true;
       const { proteinName, noResults, logging } = this;
       const { data } = await api.search({ proteinName, noResults, logging });
+      this.loading = false;
       this.$emit('submit', data);
     }
   }
