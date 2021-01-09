@@ -12,6 +12,7 @@ build/
 
 # Storage
 data/
+graphs/
 
 # local env files
 .env.local

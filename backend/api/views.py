@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import CalcPropertiesTable, DrugInteractionsTable, FeaturesTable, MainTable
 from .serializers import MainTableSerializer
 
-from .algorithm import knn
+from .algorithm import knn, makeGraphs
 
 # Create your views here.
 
@@ -17,18 +17,26 @@ class DrugView(generics.ListAPIView):
 class Drugs(APIView):
 
     def post(self, request):
-        if request.data:
-            proteinName = request.data['proteinName']
-            noResults = request.data['noResults']
-            logging = request.data['logging']
-            protein = self.findDrug(name = proteinName)
-            queryset = self.findInteractionsById(protein.primary_id)
-            interProps = [self.findCalcPropsById(q.drug_id_2) for q in queryset]
-            allProps = CalcPropertiesTable.objects.all()
-            candidateMolecules = knn(interProps, allProps, noResults, logging)
-            candidates = [self.getSerializedDrug(c.id).data for c in candidateMolecules]
-            return Response(candidates, status.HTTP_200_OK)
-        return Response({ "error": "No data in the request!" }, status.HTTP_400_BAD_REQUEST)
+        try:
+            if request.data:
+                proteinName = request.data['proteinName']
+                noResults = request.data['noResults']
+                logging = request.data['logging']
+                candidates = self.getCandidates(proteinName, noResults, logging)
+                return Response(candidates, status.HTTP_200_OK)
+            else:
+                error = { "error": "No data in the request!" }
+                return Response(error, status.HTTP_400_BAD_REQUEST)
+        except Exception as identifier:
+            return Response(identifier, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def getCandidates(self, proteinName, noResults, logging):
+        protein = self.findDrug(name = proteinName)
+        interactions = self.findInteractionsById(protein.primary_id)
+        interProps = [self.findCalcPropsById(i.drug_id_2) for i in interactions]
+        allProps = CalcPropertiesTable.objects.all()
+        candidateMolecules = knn(interProps, allProps, noResults, logging)
+        return [self.getSerializedDrug(c.id).data for c in candidateMolecules]
 
     def getSerializedDrug(self, id=''):
         return MainTableSerializer(self.findDrug(id))
@@ -44,3 +52,18 @@ class Drugs(APIView):
 
     def findCalcPropsById(self, id):
         return CalcPropertiesTable.objects.get(drug_id = id)
+
+class MakeMolGraphs(APIView):
+
+    def get(self, request):
+        try:
+            featuresTableQueryset = FeaturesTable.objects.all()
+            ids = [item.drug_id for item in featuresTableQueryset]
+            calcPropTableQueryset = CalcPropertiesTable.objects.filter(drug_id__in = ids)
+            completionCode = makeGraphs(calcPropTableQueryset)
+            if completionCode == 201: return Response({}, status.HTTP_201_CREATED)
+            elif completionCode == 208:
+                detailMsg = { "message": "This request was already fulfilled." }
+                return Response(detailMsg, status.HTTP_208_ALREADY_REPORTED)
+        except Exception as identifier:
+            return Response(identifier, status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -21,7 +21,7 @@
           <v-img
             max-height="150"
             max-width="150"
-            src="@/assets/chem-structure-sample.webp" />
+            :src="getGraphUrl(primary_id)" />
           <v-row no-gutters class="pa-4">
             <v-col
               v-for="prop in cprops" :key="prop.kind" cols="6">
@@ -49,6 +49,7 @@ export default {
   name: 'catalog',
   data: () => ({ drugs: null }),
   methods: {
+    getGraphUrl: id => `http://127.0.0.1:8000/static/graphs/${id}.png`,
     truncate: (name, length) => truncate(name, { length }),
     setData(data) {
       this.drugs = parseJsonProps(data);
