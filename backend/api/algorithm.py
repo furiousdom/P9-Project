@@ -1,7 +1,5 @@
 import xmltodict
 import numpy as np
-from os import path, listdir
-from django.conf import settings
 from deepchem import feat
 from scipy.spatial import distance
 from .models import FeaturesTable
@@ -50,8 +48,8 @@ def removeDuplicates(interactingMolecules, allMolecules):
     return allMolecules
 
 def removeNonFeatures(molecules):
-    featureObjects = FeaturesTable.objects.all()
-    featureIds = [featureObject.drug_id for featureObject in featureObjects]
+    features = FeaturesTable.objects.all()
+    featureIds = [feature.drug_id for feature in features]
     for mol in molecules:
         if mol.id not in featureIds:
             molecules.remove(mol)
@@ -81,7 +79,6 @@ def querysetToMolecules(queryset):
     notNone = lambda item: item is not None
     molecules = [xmlToMol(entry) for entry in queryset]
     molecules = list(filter(notNone, molecules))
-    print(molecules)
     return molecules
 
 def xmlToMol(entry):
@@ -100,12 +97,8 @@ def logResults(molecules):
     f.close()
 
 def makeGraphs(queryset):
-    graphsDirPath = path.join(settings.BASE_DIR, 'static\graphs\\')
-    if len(listdir(graphsDirPath)) > 10000:
-        return 208
-    else:
-        molecules = querysetToMolecules(queryset)
-        return printMolGraphs(molecules)
+    molecules = querysetToMolecules(queryset)
+    return printMolGraphs(molecules)
 
 
 # # SKLEARN implementation of KNN algorithm
