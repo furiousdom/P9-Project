@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import DrugXml
+from .models import MainTable
 
-class DrugXmlSerializer(serializers.ModelSerializer):
+class MainTableSerializer(serializers.ModelSerializer):
+    cprops = serializers.StringRelatedField()
+
     class Meta:
-        model = DrugXml
-        fields = ('id', 'name', 'content')
+        model = MainTable
+        fields = ('primary_id', 'name', 'cprops')

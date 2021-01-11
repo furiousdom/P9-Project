@@ -5,13 +5,18 @@ __pycache__/
 .vscode
 
 #  Packages & Build
+.DS_Store
 node_modules
 dist/
 build/
 
 # Storage
 data/
+graphs/
 
-.DS_Store
+# local env files
+.env.local
+.env.*.local
+
 *.sqlite3
 *.db

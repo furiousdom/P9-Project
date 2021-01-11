@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import DrugXmlView
+from .views import DrugView, Drugs, MakeMolGraphs
 
 urlpatterns = [
-    path('xmldrugs', DrugXmlView.as_view())
+    path('drugs/', DrugView.as_view()),
+    path('drugs/search/', Drugs.as_view()),
+    path('drugs/makeimages/', MakeMolGraphs.as_view())
 ]
