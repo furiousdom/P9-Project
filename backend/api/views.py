@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .models import CalcPropertiesTable, DrugInteractionsTable, FeaturesTable, MainTable
 from .serializers import MainTableSerializer
 
-from .algorithm import knn
+from .algorithm import knn, makeSmi
 
 # Create your views here.
 
@@ -25,9 +25,11 @@ class Drugs(APIView):
             queryset = self.findInteractionsById(protein.primary_id)
             interProps = [self.findCalcPropsById(q.drug_id_2) for q in queryset]
             allProps = CalcPropertiesTable.objects.all()
-            candidateMolecules = knn(interProps, allProps, noResults, logging)
-            candidates = [self.getSerializedDrug(c.id).data for c in candidateMolecules]
-            return Response(candidates, status.HTTP_200_OK)
+            # candidateMolecules = knn(interProps, allProps, noResults, logging)
+            # candidates = [self.getSerializedDrug(c.id).data for c in candidateMolecules]
+            isDone = knn(interProps, allProps, noResults, logging)
+            if isDone:
+                return Response({}, status.HTTP_200_OK)
         return Response({ "error": "No data in the request!" }, status.HTTP_400_BAD_REQUEST)
 
     def getSerializedDrug(self, id=''):
@@ -44,3 +46,13 @@ class Drugs(APIView):
 
     def findCalcPropsById(self, id):
         return CalcPropertiesTable.objects.get(drug_id = id)
+
+class MakeSmiFile(APIView):
+    
+    def get(self, request):
+        queryset = CalcPropertiesTable.objects.all()
+        isDone = makeSmi(queryset)
+        if isDone:
+            return Response(status.HTTP_200_OK)
+        else:
+            return Response({ "error": "Did not make smiles" }, status.HTTP_400_BAD_REQUEST)
