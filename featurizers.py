@@ -1,7 +1,7 @@
 import deepchem as dc
 from rdkit import Chem# Might need to import this one in a different manor.
 from printer import mols_to_pngs, display_images
-from xdparser import parseSmiles
+from xdparser import parse
 import numpy
 from scipy.spatial import distance
 
@@ -15,10 +15,10 @@ def smilesList(smiles_dic_values):
         smiles.append(item)
 
 def featurize_molecules(featurization=None, dataset=None):
-    smiles = parseSmiles(dataset).values()
+    smiles = parse(dataset, 'SMILES').values()
 
     print("Starting featurization...")
-    
+
     if featurization == 'rdkit':
         rdkitFeaturization(smiles)
     if featurization == 'convmol':
@@ -120,11 +120,11 @@ def KNNmol2VecFeaturization(smiles):#Needs packages that are incompatible I thin
     print(f'Length of features: {len(features)}')
     i = 20 #Just taking the first 20 molecules as my initial set. Need to change this to be the initial molecule set instead. Create the set by cutting it from the complete list.
     k = 0
-    
+
     combinedtempdistance = 0
     moleculelist = []
     while i<len(features):
-        while k<20:       
+        while k<20:
             if (len(features[k])!=0 and len(features[i])!=0):
                 combinedtempdistance = combinedtempdistance + numpy.linalg.norm(features[k]-features[i])
                 k=k+1
@@ -140,7 +140,7 @@ def KNNmol2VecFeaturization(smiles):#Needs packages that are incompatible I thin
     moleculelist.sort(key=lambda x: x.average_distance)
     for mole in moleculelist:
         print(mole.average_distance)
-    
+
 
 ##########################################################   Manhattan   #####################################################################
 
@@ -154,8 +154,8 @@ def Manhattanmol2VecFeaturization(smiles):#Needs packages that are incompatible 
     combinedtempdistance = 0
     moleculelist = []
     while i<len(features):
-        while k<20:       
-            if (len(features[k])!=0 and len(features[i])!=0):            
+        while k<20:
+            if (len(features[k])!=0 and len(features[i])!=0):
                 for x in range(0,300):
                     combinedtempdistance = combinedtempdistance + abs(features[k][x]-features[i][x])
                 k=k+1
@@ -185,8 +185,8 @@ def Simmol2VecFeaturization(smiles):#Needs packages that are incompatible I thin
     combinedtempdistance = 0
     moleculelist = []
     while i<len(features):
-        while k<20:       
-            if (len(features[k])!=0 and len(features[i])!=0):            
+        while k<20:
+            if (len(features[k])!=0 and len(features[i])!=0):
                 for x in range(0,300):
                     combinedtempdistance = combinedtempdistance + ((features[k][x] * features[i][x]) / ((features[k][x] * features[i][x]) + (features[k][x] - features[i][x])**2))
                 k=k+1
@@ -199,7 +199,7 @@ def Simmol2VecFeaturization(smiles):#Needs packages that are incompatible I thin
         combinedtempdistance = 0
         i=i+1
         k=0
-    moleculelist.sort(key=lambda x: x.average_distance, reverse=True)#Higher is better for this method. 
+    moleculelist.sort(key=lambda x: x.average_distance, reverse=True)#Higher is better for this method.
     for mole in moleculelist:
         print(mole.average_distance)
 
@@ -217,8 +217,8 @@ def Minkowskimol2VecFeaturization(smiles):#Needs packages that are incompatible 
     combinedtempdistance = 0
     moleculelist = []
     while i<len(features):
-        while k<20:       
-            if (len(features[k])!=0 and len(features[i])!=0):            
+        while k<20:
+            if (len(features[k])!=0 and len(features[i])!=0):
                 combinedtempdistance = combinedtempdistance + distance.minkowski(features[k], features[i],2) # 2nd order
                 k=k+1
             else:
@@ -230,7 +230,7 @@ def Minkowskimol2VecFeaturization(smiles):#Needs packages that are incompatible 
         combinedtempdistance = 0
         i=i+1
         k=0
-    moleculelist.sort(key=lambda x: x.average_distance, reverse=True)#Higher is better for this method. 
+    moleculelist.sort(key=lambda x: x.average_distance, reverse=True)#Higher is better for this method.
     for mole in moleculelist:
         print(mole.average_distance)
 
@@ -244,7 +244,7 @@ def smilesToImageFeaturization(smiles):
     #print(features)#Images cannot just be printed, need some other method.
     mols = [Chem.MolFromSmiles(smile) for smile in smiles]
     display_images(mols_to_pngs(mols))
-    
+
 
 def oneHotFeaturization(smiles):
     featurizer = dc.feat.OneHotFeaturizer()
