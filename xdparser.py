@@ -4,7 +4,8 @@ from config import xml_datasets as xdata
 
 def parse(dataset, parser):
     """
-    Loads the specified XML and parses it for either SMILES or FASTA strings.
+    Loads the specified XML and parses it for either SMILES or FASTA strings,
+    depending on the specified parser.
     """
     print('Loading XML...')
     root = etree.parse(xdata[dataset]).getroot()
@@ -20,6 +21,23 @@ def parse(dataset, parser):
         result = parseFasta(root)
         print('Parser finished.')
         return result
+
+
+def parseSMILESandFASTA(dataset):
+    """
+    Loads the specified XML and parses it for either SMILES or FASTA strings.
+    """
+    print('Loading XML...')
+    root = etree.parse(xdata[dataset]).getroot()
+    print('Loading completed.')
+
+    print('SMILES Parser start...')
+    smiles = parseSmiles(root)
+    print('Parser finished.')
+    print('FASTA Parser start...')
+    fasta = parseFasta(root)
+    print('Parser finished.')
+    return smiles, fasta
 
 def parseSmiles(root):
     """
