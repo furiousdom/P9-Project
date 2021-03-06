@@ -1,6 +1,6 @@
 import json
 import psycopg2
-# import deepchem as dc
+import deepchem as dc
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -31,6 +31,14 @@ def saveItemsToTxt(fileName, items):
     for item in items:
         f.write(f'{item}\n')
     f.close()
+
+def saveLabelsTxtFile(fileName, num_of_samples, num_of_positive_samples):
+    f = open(fileName, 'w', encoding='utf-8')
+    for i in range(num_of_samples):
+        if i < num_of_positive_samples:
+            f.write('1\n')
+        else:
+            f.write('0\n')
 
 def extractExternalIds(dataFrame):
     cids, uniprots = parseExtIds('fd')
@@ -159,6 +167,8 @@ def loadPositiveSmilesForFeaturizer():
     return positiveSmilesList
 
 def makePositiveMoleculeCsv():
+    # If errors arive while featurizing the molecules, it will screw up the CSV file
+    # Loading 1000 samples doesn't yield errors meaning CSV is created normally
     # Don't forget to delete the first row in the newly created file
     featurizer = dc.feat.Mol2VecFingerprint()
     positiveSmilesList = loadPositiveSmilesForFeaturizer()
@@ -168,42 +178,52 @@ def makePositiveMoleculeCsv():
 # positiveIdPairs = getPositiveIdPairs()
 # positiveSmilesFastaPairs = idPairsToSmilesFastaPairs(positiveIdPairs)
 
+# ####################################
+# Positive & Negative Dataset
+# ####################################
+
+def saveProteinsForFeaturizer():
+    positiveSmilesFastaPairs = loadPositiveSmilesFastaPairs()[:1000]
+    positiveFastaList = [pair[1] for pair in positiveSmilesFastaPairs]
+    negativeSmilesFastaPairs = loadNegativeSmilesFastaPairs()
+    negativeFastaList = [pair[1] for pair in negativeSmilesFastaPairs]
+    fastaList = positiveFastaList + negativeFastaList
+    saveItemsToTxt('./data/proteins_FASTA.txt', fastaList)
+    # Change numbers in line below as needed
+    saveLabelsTxtFile('./data/labels_FASTA.txt', 1241, 1000)
+
+def saveMoleculeDataFrameToCsv():
+    positiveSmilesList = loadPositiveSmilesForFeaturizer()[:1000]
+    negativeSmilesList = loadNegativeSmilesForFeaturizer()
+    smilesList = positiveSmilesList + negativeSmilesList
+    featurizer = dc.feat.Mol2VecFingerprint()
+    molecules = featurizer(smilesList)
+    saveMoleculeEmbeddingsToCsv('./data/moleculeDataset.csv', molecules)
+
 # ==============================================================================
 # Program
 # ==============================================================================
 
-def printShapeAndHead(df):
-    print('Shape')
-    print(df.shape)
-    print()
-    print('Head')
-    print(df.head(4))
+# def printShapeAndHead(df):
+#     print('Shape')
+#     print(df.shape)
+#     print()
+#     print('Head')
+#     print(df.head(4))
 
-negativeMoleculesDataFrame = pd.read_csv('./data/negativeMoleculesDataset.csv')
-negativeProteinsDataFrame = pd.read_csv('./data/negativeProteinsFullDataset.csv')
+moleculesDataFrame = pd.read_csv('./data/moleculeDataset.csv')
+proteinDataFrame = pd.read_csv('./data/proteinOptimumDataset.csv')
 
-negativeDataFrame = pd.concat([negativeProteinsDataFrame, negativeMoleculesDataFrame], axis=1)
+df = pd.concat([moleculesDataFrame, proteinDataFrame])
 
-neg_x = np.array(negativeDataFrame)
-neg_y = np.zeros((negativeDataFrame.shape[0],), dtype=int)
+X = np.array(df)
+Y = np.zeros((df.shape[0],), dtype=int)
+Y[:999] = 1
 
-print(neg_x.shape)
-print(neg_y.shape)
+print(X.shape)
+print(Y.shape)
 
-x_train, x_test, y_train, y_test = train_test_split(neg_x, neg_y, test_size=0.2, random_state=0)
-
-# positiveMoleculesDataFrame = pd.read_csv('./data/positiveMoleculesDataset.csv', nrows=3000)
-# positiveProteinsDataFrame = pd.read_csv('./data/positiveProteinsFullDataset.csv', nrows=3000)
-# print('Positive Molecules CSV')
-# printShapeAndHead(positiveMoleculesDataFrame)
-# print('Positive Proteins CSV')
-# printShapeAndHead(positiveProteinsDataFrame)
-
-# positiveDataFrame = pd.concat([positiveProteinsDataFrame, positiveMoleculesDataFrame], axis=1)
-# print('Combined dataset')
-# printShapeAndHead(positiveDataFrame)
-
-# # df = pd.concat([negativeDataFrame, positiveDataFrame])
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
 
 model = tf.keras.models.Sequential()
 
@@ -214,7 +234,7 @@ model.add(layers.Dense(200, activation="relu"))
 model.add(layers.Dense(100, activation="relu"))
 model.add(layers.Dense(50, activation="relu"))
 model.add(layers.Dense(25, activation="relu"))
-model.add(layers.Dense(1, activation="relu"))
+model.add(layers.Dense(1))
 
 model.compile(
     optimizer=keras.optimizers.SGD(),
@@ -224,3 +244,7 @@ model.compile(
 model.fit(x_train, y_train, batch_size = 1, epochs = 1)
 
 predictions = model.predict(x_test)
+
+print(predictions[:30])
+print(y_test[:30])
+print()
