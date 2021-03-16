@@ -4,23 +4,37 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler
 
-from dataHandler import printDfShapeHeadTail
+checkpoint_path = './data/models/cpTraining1.ckpt'
 
-moleculesDataFrame = pd.read_csv('./data/moleculeDatasetWithHeaders.csv')
-proteinDataFrame = pd.read_csv('./data/proteinOptimumDatasetWithHeaders.csv')
+def checkpoint():
+    # checkpoint_dir = path.dirname(checkpoint_path)
+
+    # Create a callback that saves the model's weights
+    return tf.keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_path,
+        save_weights_only=True,
+        verbose=1
+    )
+
+# from dataHandler import readFASTAsFromFile
+# from protvec import sequences2protvecsCSV
+# sequences = readFASTAsFromFile('./data/proteins_FASTA.txt')
+# sequences2protvecsCSV('./data/standard/proteinDataset.csv', sequences)
+
+cp_callback = checkpoint()
+
+moleculesDataFrame = pd.read_csv('./data/standard/moleculeDataset.csv')
+proteinDataFrame = pd.read_csv('./data/standard/proteinDataset.csv')
 
 df = pd.concat([moleculesDataFrame, proteinDataFrame], axis=1)
-
-# scaler = MinMaxScaler(feature_range = (0, 1))
-# scaled_data = scaler.fit_transform(df)
 
 class_names = ['no-interaction', 'ineraction']
 
 X = np.array(df)
-Y = np.zeros((df.shape[0],), dtype=int)
-Y[:999] = 1
+Y = np.zeros((df.shape[0], 2), dtype=int)
+Y[:1000] = [0, 1]
+Y[1000:] = [1, 0]
 
 x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
 
@@ -37,23 +51,32 @@ model.add(layers.Dense(2, activation='softmax'))
 
 model.compile(
     optimizer=keras.optimizers.Adam(),
-    loss=keras.losses.BinaryCrossentropy(),
+    loss=keras.losses.CategoricalCrossentropy(),
     metrics=['accuracy']
 )
 
-model.fit(x_train, y_train, batch_size = 1, epochs = 6)
+model.fit(x_train, y_train, batch_size = 8, epochs = 63, callbacks=[cp_callback])
 
 predictions = model.predict(x_test)
 
-temp = []
-for prediction in predictions:
-    temp.append(np.argmax(prediction))
+temp_y_test = []
+temp_predictions = []
+for i in range(y_test.shape[0]):
+    temp_predictions.append(np.argmax(predictions[i]))
+    temp_y_test.append(np.argmax(y_test[i]))
 
 counter = 0
-for i in range(y_test.size):
-    if y_test[i] == temp[i]:
+for i in range(y_test.shape[0]):
+    if temp_y_test[i] == temp_predictions[i]:
         counter += 1
 
-acc = counter * 100 / y_test.size
+print(temp_predictions)
 
-print(f'Accuracy on test set is {acc}, predicted {counter} out of {y_test.size}')
+acc = counter * 100 / y_test.shape[0]
+
+print(f'Accuracy on test set is {acc}, predicted {counter} out of {y_test.shape[0]}')
+
+# model.load_weights(checkpoint_path)
+
+# loss, acc = model.evaluate(x_test, y_test, verbose=2)
+# print(f'Restored model, accuracy: {100 * acc}')

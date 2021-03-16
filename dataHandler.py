@@ -204,3 +204,22 @@ def saveMoleculeDataFrameToCsv():
     featurizer = dc.feat.Mol2VecFingerprint()
     molecules = featurizer(smilesList)
     saveMoleculeEmbeddingsToCsv('./data/moleculeDataset.csv', molecules)
+
+def readFASTAsFromFile(fileName):
+
+    '''
+    :param fileName:
+    :return: genome sequences
+    '''
+    with open(fileName, 'r') as file:
+        sequences = []
+        genome = ''
+        for line in file:
+            if line[0] != '>':
+                genome += line.strip()
+            else:
+                sequences.append(genome.upper())
+                genome = ''
+        sequences.append(genome.upper())
+        del sequences[0]
+        return sequences
