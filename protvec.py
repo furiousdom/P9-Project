@@ -14,7 +14,7 @@ import csv
 #Source: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0141287
 #Embedding: https://github.com/ehsanasgari/Deep-Proteomics
 ehsanEmbed =  []
-with open("./data/embed_protVec_100d_3grams.csv") as tsvfile:
+with open("./data/protvec.csv") as tsvfile:
     tsvreader = csv.reader(tsvfile, delimiter="\t")
     for line in tsvreader:
         ehsanEmbed.append(line[0].split('\t'))

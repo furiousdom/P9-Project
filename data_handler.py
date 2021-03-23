@@ -1,3 +1,4 @@
+import math
 import json
 import psycopg2
 import pandas as pd
@@ -206,7 +207,6 @@ def saveMoleculeDataFrameToCsv():
     saveMoleculeEmbeddingsToCsv('./data/moleculeDataset.csv', molecules)
 
 def readFASTAsFromFile(fileName):
-
     '''
     :param fileName:
     :return: genome sequences
@@ -223,3 +223,17 @@ def readFASTAsFromFile(fileName):
         sequences.append(genome.upper())
         del sequences[0]
         return sequences
+
+def load_binary_scores(filename, threshold, preprocess = False):
+    scores_list = []
+    f = open(filename, 'r')
+    for line in f:
+        score = float(line)
+        if preprocess:
+            score = -1 * math.log10(score/pow(10, 9))
+        if score >= threshold:
+            scores_list.append([0, 1])
+        else:
+            scores_list.append([1, 0])
+    f.close()
+    return scores_list
