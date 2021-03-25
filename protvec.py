@@ -126,7 +126,7 @@ def sequences2protvecsCSV(filename, seqs, kmersdict=threemersidx, embeddingweigh
 
     swissprotvecs = Parallel(n_jobs=num_cores)(delayed(protvec)(kmersdict, seq, embeddingweights) for seq in seqs)
     swissprotvecsdf = pd.DataFrame(formatprotvecs(swissprotvecs))
-    swissprotvecsdf.to_csv(filename, index=False)
+    swissprotvecsdf.to_csv(filename, index=False, header=False)
     return swissprotvecsdf
 
 def featurize(seqs, kmersdict=threemersidx, embeddingweights=embeddingMat):

@@ -29,14 +29,19 @@ def create_aau_output(df):
     Y = np.zeros((df.shape[0], 2), dtype=int)
     Y[:1000] = [0, 1]
     Y[1000:] = [1, 0]
+    return Y
 
 cp_callback = checkpoint()
+
+# aau_molecules, aau_proteins = load_dataset('aau')
+# aau_X = pd.concat([aau_molecules, aau_proteins], axis=1)
+# aau_Y = create_aau_output(aau_X)
 
 kiba_molecules, kiba_proteins = load_dataset('kiba')
 davis_molecules, davis_proteins = load_dataset('davis')
 
-del kiba_molecules['Unnamed: 0']
-del davis_molecules['Unnamed: 0']
+# del kiba_molecules['Unnamed: 0']
+# del davis_molecules['Unnamed: 0']
 
 kiba = pd.concat([kiba_molecules, kiba_proteins], axis=1)
 davis = pd.concat([davis_molecules, davis_proteins], axis=1)
@@ -49,7 +54,9 @@ davis_Y = np.array(load_binary_scores('./data/datasets/davis/scores.txt', 7.0, T
 
 model = tf.keras.models.Sequential()
 
-model.add(layers.Input(shape=(kiba_X.shape[1],)))
+x_train, x_test, y_train, y_test = train_test_split(kiba_X, kiba_Y, test_size=0.8, random_state=0)
+
+model.add(layers.Input(shape=(x_train.shape[1],)))
 model.add(layers.Dense(700, activation='relu'))
 model.add(layers.Dense(500, activation='sigmoid'))
 model.add(layers.Dense(300, activation='relu'))
@@ -88,9 +95,6 @@ def check_and_print_accuracy(dataset_name, y_test, predictions):
     acc = counter * 100 / y_test.shape[0]
 
     print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
-
-
-x_train, x_test, y_train, y_test = train_test_split(kiba_X, kiba_Y, test_size=0.8, random_state=0)
 
 predictions = model.predict(x_test)
 
