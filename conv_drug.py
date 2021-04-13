@@ -19,6 +19,9 @@ from keras.layers import Bidirectional
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import optimizers, layers
 
+from lifelines.utils import concordance_index
+
+checkpoint_path = './data/models/cpTraining1.ckpt'
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4
 # [8, 12], [4, 8]
 
@@ -57,27 +60,51 @@ def load_test_datasets():
     davis_Y = np.array(load_binary_scores('./data/datasets/davis/scores.txt', 7.0, True))
     return kiba_X, kiba_Y, davis_X, davis_Y
 
-def check_and_print_accuracy(dataset_name, y_test, predictions):
+def finalize_results(y_test, predictions):
     temp_y_test = []
     temp_predictions = []
     for i in range(y_test.shape[0]):
         temp_predictions.append(np.argmax(predictions[i]))
         temp_y_test.append(np.argmax(y_test[i]))
+    return np.array(temp_y_test), np.array(temp_predictions)
 
+def check_and_print_accuracy(dataset_name, y_test, predictions):
+    y_test, predictions = finalize_results(y_test, predictions)
+    acc, counter = calc_accuracy(y_test, predictions)
+    mse = calc_mean_squared_error(y_test, predictions)
+    ci = concordance_index(y_test, predictions)
+    print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
+    print(f'mean squared error: {mse}')
+    print(f'concordance index: {ci}')
+
+def calc_accuracy(y_test, predictions):
     counter = 0
     for i in range(y_test.shape[0]):
-        if temp_y_test[i] == temp_predictions[i]:
+        if y_test[i] == predictions[i]:
             counter += 1
 
-    f = open(f'./data/{dataset_name}-result.txt', 'w')
-    f.write('actual state\t predicted state\n')
+    # f = open(f'./data/{dataset_name}-result.txt', 'w')
+    # f.write('actual state\t predicted state\n')
+    # for i in range(y_test.shape[0]):
+    #     f.write(f'{y_test[i]}\t{predictions[i]}\n')
+    # f.close()
+
+    return counter * 100 / y_test.shape[0], counter # Remove counter
+
+def calc_mean_squared_error(y_test, predictions):
+    sum = 0
+    counter = 0
     for i in range(y_test.shape[0]):
-        f.write(f'{temp_y_test[i]}\t{temp_predictions[i]}\n')
-    f.close()
+        sum += pow((y_test[i] - predictions[i]), 2)
+    return sum / y_test.shape[0]
 
-    acc = counter * 100 / y_test.shape[0]
-
-    print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
+def checkpoint():
+    # checkpoint_dir = path.dirname(checkpoint_path)
+    return ModelCheckpoint(
+        filepath=checkpoint_path,
+        save_weights_only=True,
+        verbose=1
+    )
 
 def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     XDinput = Input(shape=(300, 1))
@@ -109,7 +136,8 @@ def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     predictions = Dense(2, activation='softmax')(FC2)
 
     interactionModel = Model(inputs=[XDinput, XTinput], outputs=[predictions])
-    interactionModel.compile(optimizer=keras.optimizers.Adam(), loss=keras.losses.CategoricalCrossentropy(), metrics=['accuracy'])
+    metrics=['accuracy', 'mean_squared_error']
+    interactionModel.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(interactionModel.summary())
     # plot_model(interactionModel, to_file='data/figures/model.png')
@@ -129,27 +157,22 @@ def split_reshape(data_X, data_Y, test_size=0.15):
     x_test_split[1] = x_test_split[1].reshape(x_test_split[1].shape[0], 100, 1).astype('float32')
     return x_train_split, x_test_split, y_train, y_test
 
+def load_predict_dataset(dataset_name, data_X, data_Y):
+    x_train_split, x_test_split, y_train, y_test = split_reshape(data_X, data_Y, test_size=0.15)
+    predictions = model.predict(x_test_split)
+    check_and_print_accuracy(dataset_name, y_test, predictions)
+
+cp_callback = checkpoint()
+
 aau_X, aau_Y = load_train_dataset()
 kiba_X, kiba_Y, davis_X, davis_Y = load_test_datasets()
 
-x_train_split, x_test_split, y_train, y_test = split_reshape(aau_X, aau_Y, test_size=0.15)
+model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
 
-model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2) 
+# model.fit(x_train_split, y_train, batch_size=8, epochs=45, callbacks=[cp_callback])
 
-model.fit(x_train_split, y_train, batch_size = 8, epochs = 45)
+model.load_weights(checkpoint_path)
 
-predictions = model.predict(x_test_split)
-
-check_and_print_accuracy('aau', y_test, predictions)
-
-x_train_split, x_test_split, y_train, y_test = split_reshape(kiba_X, kiba_Y, test_size=0.95)
-
-predictions = model.predict(x_test_split)
-
-check_and_print_accuracy('kiba', y_test, predictions)
-
-x_train_split, x_test_split, y_train, y_test = split_reshape(davis_X, davis_Y, test_size=0.95)
-
-predictions = model.predict(x_test_split)
-
-check_and_print_accuracy('davis', y_test, predictions)
+load_predict_dataset('aau', aau_X, aau_Y)
+load_predict_dataset('kiba', kiba_X, kiba_Y)
+load_predict_dataset('davis', davis_X, davis_Y)
