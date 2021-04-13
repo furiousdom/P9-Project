@@ -20,7 +20,6 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import optimizers, layers
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4
-# NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = [32], [8], [4]
 # [8, 12], [4, 8]
 
 def load_dataset(dataset_name):
@@ -36,6 +35,13 @@ def create_aau_output(df):
     Y[:1000] = [0, 1]
     Y[1000:] = [1, 0]
     return Y
+
+def load_train_dataset():
+    aau_molecules, aau_proteins = load_dataset('aau')
+    aau_X = pd.concat([aau_molecules, aau_proteins], axis=1)
+    aau_X = np.array(aau_X)
+    aau_Y = create_aau_output(aau_X)
+    return aau_X, aau_Y
 
 def load_test_datasets():
     kiba_molecules, kiba_proteins = load_dataset('kiba')
@@ -73,17 +79,9 @@ def check_and_print_accuracy(dataset_name, y_test, predictions):
 
     print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
 
-def get_model(FEATURE_LENGTH, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
-    # XDinput = Input(shape=(FLAGS.max_smi_len, FLAGS.charsmiset_size))
-    # XTinput = Input(shape=(FLAGS.max_seq_len, FLAGS.charseqset_size))
-
-    XDinput = Input(shape=(1054, 300))
-    XTinput = Input(shape=(1054, 100))
-
-    # encode_smiles = Conv1D(1, kernel_size = FILTER_LENGTH1, input_shape = (1054 , 300))(XDinput)
-    # encode_smiles = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encode_smiles)
-    # encode_smiles = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encode_smiles)
-    # encode_smiles = GlobalMaxPooling1D()(encode_smiles) #pool_size=pool_length[i]
+def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
+    XDinput = Input(shape=(300, 1))
+    XTinput = Input(shape=(100, 1))
 
     encode_smiles = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(XDinput)
     encode_smiles = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encode_smiles)
@@ -99,8 +97,6 @@ def get_model(FEATURE_LENGTH, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
 
 
     encode_interaction = keras.layers.concatenate([encode_smiles, encode_protein])
-    # encode_interaction = keras.layers.concatenate([encode_smiles, encode_protein], axis=1)
-    #encode_interaction = keras.layers.concatenate([encode_smiles, encode_protein], axis=-1) #merge.Add()([encode_smiles, encode_protein])
 
     # Fully connected 
     FC1 = Dense(1024, activation='relu')(encode_interaction)
@@ -109,11 +105,6 @@ def get_model(FEATURE_LENGTH, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     FC2 = Dropout(0.1)(FC2)
     FC2 = Dense(512, activation='relu')(FC2)
 
-
-    # predictions = Dense(1, kernel_initializer='normal')(FC2) 
-
-    # interactionModel = Model(inputs=[XDNUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = [32], [8], [4]input, XTinput], outputs=[predictions])
-    # interactionModel.compile(optimizer='adam', loss='mean_squared_error', metrics=[cindex_score]) #, metrics=['cindex_score']
 
     predictions = Dense(2, activation='softmax')(FC2)
 
@@ -125,32 +116,40 @@ def get_model(FEATURE_LENGTH, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
 
     return interactionModel
 
-aau_molecules, aau_proteins = load_dataset('aau')
-aau_X = pd.concat([aau_molecules, aau_proteins], axis=1)
-aau_Y = create_aau_output(aau_X)
+def split_reshape(data_X, data_Y, test_size=0.15):
+    x_train, x_test, y_train, y_test = train_test_split(data_X, data_Y, test_size=test_size, random_state=0)
 
+    x_train_split = np.hsplit(x_train, [300])
+    x_test_split = np.hsplit(x_test, [300])
+
+    x_train_split[0] = x_train_split[0].reshape(x_train_split[0].shape[0], 300, 1).astype('float32')
+    x_train_split[1] = x_train_split[1].reshape(x_train_split[1].shape[0], 100, 1).astype('float32')
+
+    x_test_split[0] = x_test_split[0].reshape(x_test_split[0].shape[0], 300, 1).astype('float32')
+    x_test_split[1] = x_test_split[1].reshape(x_test_split[1].shape[0], 100, 1).astype('float32')
+    return x_train_split, x_test_split, y_train, y_test
+
+aau_X, aau_Y = load_train_dataset()
 kiba_X, kiba_Y, davis_X, davis_Y = load_test_datasets()
 
-x_train, x_test, y_train, y_test = train_test_split(aau_X, aau_Y, test_size=0.15, random_state=0)
+x_train_split, x_test_split, y_train, y_test = split_reshape(aau_X, aau_Y, test_size=0.15)
 
-x_train_split = np.hsplit(x_train, [300])
-# x_train_drugs = x_train_split[0]
-# x_train_targets = x_train_split[1]
-x_test_split = np.hsplit(x_test, [300])
+model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2) 
 
-# np.expand_dims(x_train_split, axis=())
-# x_train_split[:, :,]
+model.fit(x_train_split, y_train, batch_size = 8, epochs = 45)
 
-model = get_model(x_train.shape[1], NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2) 
+predictions = model.predict(x_test_split)
 
-model.fit(x_train_split, y_train, batch_size = 8, epochs = 63)
+check_and_print_accuracy('aau', y_test, predictions)
+
+x_train_split, x_test_split, y_train, y_test = split_reshape(kiba_X, kiba_Y, test_size=0.95)
 
 predictions = model.predict(x_test_split)
 
 check_and_print_accuracy('kiba', y_test, predictions)
 
-# x_train, x_test, y_train, y_test = train_test_split(davis_X, davis_Y, test_size=0.8, random_state=0)
+x_train_split, x_test_split, y_train, y_test = split_reshape(davis_X, davis_Y, test_size=0.95)
 
-# predictions = model.predict(x_test)
+predictions = model.predict(x_test_split)
 
-# check_and_print_accuracy('davis', y_test, predictions)
+check_and_print_accuracy('davis', y_test, predictions)
