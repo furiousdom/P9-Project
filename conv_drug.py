@@ -20,6 +20,7 @@ from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras import optimizers, layers
 
 from lifelines.utils import concordance_index
+import emetrics
 
 checkpoint_path = './data/models/cpTraining1.ckpt'
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4
@@ -71,11 +72,21 @@ def finalize_results(y_test, predictions):
 def check_and_print_accuracy(dataset_name, y_test, predictions):
     y_test, predictions = finalize_results(y_test, predictions)
     acc, counter = calc_accuracy(y_test, predictions)
-    mse = calc_mean_squared_error(y_test, predictions)
-    ci = concordance_index(y_test, predictions)
-    print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
-    print(f'mean squared error: {mse}')
-    print(f'concordance index: {ci}')
+    acc = round(acc, 3)
+    # mse = calc_mean_squared_error(y_test, predictions)
+    # ci = concordance_index(y_test, predictions)
+
+    ci2 = round(emetrics.get_cindex(y_test, predictions), 3)
+    mse2 = round(emetrics.get_k(y_test, predictions), 3)
+    r2m = round(emetrics.get_rm2(y_test, predictions), 3)
+    aupr = round(emetrics.get_aupr(y_test, predictions), 3)
+
+    print(f'{dataset_name} dataset:')
+    print(f'\tAccuracy: {acc}%, predicted {counter} out of {y_test.shape[0]}')
+    print(f'\tMean Squared Error: {mse2}')
+    print(f'\tConcordance Index: {ci2}')
+    print(f'\tr2m: {r2m}')
+    print(f'\tAUPR: {aupr}')
 
 def calc_accuracy(y_test, predictions):
     counter = 0

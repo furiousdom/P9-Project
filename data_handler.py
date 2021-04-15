@@ -4,6 +4,7 @@ import psycopg2
 import pandas as pd
 import deepchem as dc
 from xdparser import parseExtIds, parseSMILESandFASTA
+import numpy as np
 
 # ==============================================================================
 # General helper functions
@@ -131,7 +132,7 @@ def saveNegativeSmilesForFeaturizer():
     saveSmilesForFeaturizer('./data/negativeSmiles.json', smilesFastaPairs)
 
 def loadNegativeSmilesForFeaturizer():
-    negativeSmilesList = loadJsonObjFromFile('./data/negativeSmilesList.json')
+    negativeSmilesList = loadJsonObjFromFile('./data/negativeSmiles.json')
     return negativeSmilesList
 
 def makeNegativeMoleculeCsv():
@@ -143,6 +144,8 @@ def makeNegativeMoleculeCsv():
 
 # negativeIdPairs = loadJsonObjFromFile('./data/negativeIds.json')
 # negativeSmilesFastaPairs = idPairsToSmilesFastaPairs(negativeIdPairs)
+# saveNegativeSmilesForFeaturizer()
+makeNegativeMoleculeCsv()
 
 # ####################################
 # Positive Dataset
@@ -177,26 +180,36 @@ def makePositiveMoleculeCsv():
     # Loading 1000 samples doesn't yield errors meaning CSV is created normally
     # Don't forget to delete the first row in the newly created file
     featurizer = dc.feat.Mol2VecFingerprint()
-    positiveSmilesList = loadPositiveSmilesForFeaturizer()
+    positiveSmilesList = loadPositiveSmilesForFeaturizer()[:20000]
     positiveMolecules = featurizer(positiveSmilesList)
-    saveMoleculeEmbeddingsToCsv('./data/positiveMoleculesDataset.csv', positiveMolecules)
+    indicies = [i for i, x in enumerate(positiveMolecules) if x.size == 0]
+    saveJsonObjToFile('./data/problematic_indicies.json', indicies)
+    positiveMolecules = np.delete(positiveMolecules, indicies, 0)
+    fixed_positive_molecules = []
+    for l in positiveMolecules:
+        fixed_positive_molecules.append(list(l))
+    saveMoleculeEmbeddingsToCsv('./data/positiveMoleculesDataset.csv', fixed_positive_molecules)
 
 # positiveIdPairs = getPositiveIdPairs()
 # positiveSmilesFastaPairs = idPairsToSmilesFastaPairs(positiveIdPairs)
+# makePositiveMoleculeCsv()
 
 # ####################################
 # Positive & Negative Dataset
 # ####################################
 
 def saveProteinsForFeaturizer():
-    positiveSmilesFastaPairs = loadPositiveSmilesFastaPairs()[:1000]
+    positiveSmilesFastaPairs = loadPositiveSmilesFastaPairs()[:20000]
     positiveFastaList = [pair[1] for pair in positiveSmilesFastaPairs]
+    indicies = loadJsonObjFromFile('./data/problematic_indicies.json')
+    for idx in indicies:
+        positiveFastaList.pop(idx)
     negativeSmilesFastaPairs = loadNegativeSmilesFastaPairs()
     negativeFastaList = [pair[1] for pair in negativeSmilesFastaPairs]
     fastaList = positiveFastaList + negativeFastaList
     saveItemsToTxt('./data/proteins_FASTA.txt', fastaList)
     # Change numbers in line below as needed
-    saveLabelsTxtFile('./data/labels_FASTA.txt', 1241, 1000)
+    # saveLabelsTxtFile('./data/labels_FASTA.txt', 1241, 1000)
 
 def saveMoleculeDataFrameToCsv():
     positiveSmilesList = loadPositiveSmilesForFeaturizer()[:1000]
@@ -205,6 +218,13 @@ def saveMoleculeDataFrameToCsv():
     featurizer = dc.feat.Mol2VecFingerprint()
     molecules = featurizer(smilesList)
     saveMoleculeEmbeddingsToCsv('./data/moleculeDataset.csv', molecules)
+
+def combine_pos_neg_csvs():
+    positive_molecules_df = pd.read_csv('./data/positiveMoleculesDataset.csv')
+    negative_molecules_df = pd.read_csv('./data/negativeMoleculesDataset.csv')
+    frames = [positive_molecules_df, negative_molecules_df]
+    molecules_df = pd.concat(frames)
+    molecules_df.to_csv('./data/molecules_dataset.csv')
 
 def readFASTAsFromFile(fileName):
     '''
@@ -237,3 +257,9 @@ def load_binary_scores(filename, threshold, preprocess = False):
             scores_list.append([1, 0])
     f.close()
     return scores_list
+
+df = pd.read_csv('./data/copy_molecules_dataset.csv')
+df.drop(index = 0)
+# df.drop(index = 1)
+df.to_csv('./data/copy2.csv')
+print(df)
