@@ -5,9 +5,10 @@ from tensorflow import keras
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 from data_handler import load_binary_scores
+import emetrics
 
 class_names = ['no-interaction', 'ineraction']
-checkpoint_path = './data/models/cpTraining1.ckpt'
+checkpoint_path = './data/models/stadard_nn/model_1.ckpt'
 
 def checkpoint():
     # checkpoint_dir = path.dirname(checkpoint_path)
@@ -33,9 +34,10 @@ def create_aau_output(df):
 
 cp_callback = checkpoint()
 
-# aau_molecules, aau_proteins = load_dataset('aau')
-# aau_X = pd.concat([aau_molecules, aau_proteins], axis=1)
-# aau_Y = create_aau_output(aau_X)
+aau_molecules, aau_proteins = load_dataset('aau1000')
+aau_X = pd.concat([aau_molecules, aau_proteins], axis=1)
+aau_X = np.array(aau_X)
+aau_Y = create_aau_output(aau_X)
 
 kiba_molecules, kiba_proteins = load_dataset('kiba')
 davis_molecules, davis_proteins = load_dataset('davis')
@@ -54,7 +56,7 @@ davis_Y = np.array(load_binary_scores('./data/datasets/davis/scores.txt', 7.0, T
 
 model = tf.keras.models.Sequential()
 
-x_train, x_test, y_train, y_test = train_test_split(kiba_X, kiba_Y, test_size=0.8, random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(aau_X, aau_Y, test_size=0.15, random_state=0)
 
 model.add(layers.Input(shape=(x_train.shape[1],)))
 model.add(layers.Dense(700, activation='relu'))
@@ -71,30 +73,47 @@ model.compile(
     metrics=['accuracy']
 )
 
-# model.fit(x_train, y_train, batch_size = 8, epochs = 63, callbacks=[cp_callback])
-model.load_weights(checkpoint_path)
+model.fit(x_train, y_train, batch_size = 8, epochs = 63, callbacks=[cp_callback])
+# model.load_weights(checkpoint_path)
 
-def check_and_print_accuracy(dataset_name, y_test, predictions):
+def calc_accuracy(y_test, predictions):
+    counter = 0
+    for i in range(y_test.shape[0]):
+        if y_test[i] == predictions[i]:
+            counter += 1
+    return counter * 100 / y_test.shape[0], counter # Remove counter
+
+def finalize_results(y_test, predictions):
     temp_y_test = []
     temp_predictions = []
     for i in range(y_test.shape[0]):
         temp_predictions.append(np.argmax(predictions[i]))
         temp_y_test.append(np.argmax(y_test[i]))
+    return np.array(temp_y_test), np.array(temp_predictions)
 
-    counter = 0
-    for i in range(y_test.shape[0]):
-        if temp_y_test[i] == temp_predictions[i]:
-            counter += 1
+def check_and_print_accuracy(dataset_name, y_test, predictions):
+    y_test, predictions = finalize_results(y_test, predictions)
+    acc, counter = calc_accuracy(y_test, predictions)
+    acc = round(acc, 3)
+    # mse = calc_mean_squared_error(y_test, predictions)
+    # ci = concordance_index(y_test, predictions)
 
-    f = open(f'./data/{dataset_name}-result.txt', 'w')
-    f.write('actual state\t predicted state\n')
-    for i in range(y_test.shape[0]):
-        f.write(f'{temp_y_test[i]}\t{temp_predictions[i]}\n')
-    f.close()
+    ci2 = round(emetrics.get_cindex(y_test, predictions), 3)
+    mse2 = round(emetrics.get_k(y_test, predictions), 3)
+    r2m = round(emetrics.get_rm2(y_test, predictions), 3)
+    aupr = round(emetrics.get_aupr(y_test, predictions), 3)
 
-    acc = counter * 100 / y_test.shape[0]
+    print(f'{dataset_name} dataset:')
+    print(f'\tAccuracy: {acc}%, predicted {counter} out of {y_test.shape[0]}')
+    print(f'\tMean Squared Error: {mse2}')
+    print(f'\tConcordance Index: {ci2}')
+    print(f'\tr2m: {r2m}')
+    print(f'\tAUPR: {aupr}')
 
-    print(f'Accuracy on test set {dataset_name} is {acc}, predicted {counter} out of {y_test.shape[0]}')
+predictions = model.predict(x_test)
+check_and_print_accuracy('aau1000', y_test, predictions)
+
+x_train, x_test, y_train, y_test = train_test_split(kiba_X, kiba_Y, test_size=0.8, random_state=0)
 
 predictions = model.predict(x_test)
 

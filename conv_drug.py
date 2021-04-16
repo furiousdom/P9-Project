@@ -22,7 +22,7 @@ from keras import optimizers, layers
 from lifelines.utils import concordance_index
 import emetrics
 
-checkpoint_path = './data/models/cpTraining1.ckpt'
+checkpoint_path = './data/models/deep_dta/model_1.ckpt'
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4
 # [8, 12], [4, 8]
 

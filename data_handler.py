@@ -257,9 +257,3 @@ def load_binary_scores(filename, threshold, preprocess = False):
             scores_list.append([1, 0])
     f.close()
     return scores_list
-
-df = pd.read_csv('./data/copy_molecules_dataset.csv')
-df.drop(index = 0)
-# df.drop(index = 1)
-df.to_csv('./data/copy2.csv')
-print(df)

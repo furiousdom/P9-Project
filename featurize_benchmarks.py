@@ -8,55 +8,55 @@ limit = 10000
 # Kiba dataset
 ############################################################################
 
-kibaNofeatures = []
-kibaJson = data_handler.loadJsonObjFromFile('./data/kiba.json')[:limit]
-featurizer = dc.feat.Mol2VecFingerprint()
-molecules = []
-proteins = []
+# kibaNofeatures = []
+# kibaJson = data_handler.loadJsonObjFromFile('./data/kiba.json')[:limit]
+# featurizer = dc.feat.Mol2VecFingerprint()
+# molecules = []
+# proteins = []
 
-for i, pair in enumerate(kibaJson):
-    try:
-        molecules.append(featurizer(pair[1])[0])
-    except:
-        kibaNofeatures.append(i)
+# for i, pair in enumerate(kibaJson):
+#     try:
+#         molecules.append(featurizer(pair[1])[0])
+#     except:
+#         kibaNofeatures.append(i)
 
-# # dataHandler.saveMoleculeEmbeddingsToCsv('./data/kibaMolecules.csv', molecules)
-# # del molecules
+# # # dataHandler.saveMoleculeEmbeddingsToCsv('./data/kibaMolecules.csv', molecules)
+# # # del molecules
 
-with open ('./data/kibaProteins.csv', "a") as kiba_protein_file:
-    for i, pair in enumerate(kibaJson):
-        if i not in kibaNofeatures:
-            protvec.sequences2protvecsCSV(kiba_protein_file, [pair[0]])
+# with open ('./data/kibaProteins.csv', "a") as kiba_protein_file:
+#     for i, pair in enumerate(kibaJson):
+#         if i not in kibaNofeatures:
+#             protvec.sequences2protvecsCSV(kiba_protein_file, [pair[0]])
 
 # ############################################################################
 # # Davis dataset
 # ############################################################################
 
-davisNofeatures = []
-featurizer = dc.feat.Mol2VecFingerprint()
-molecules = []
-proteins = []
+# davisNofeatures = []
+# featurizer = dc.feat.Mol2VecFingerprint()
+# molecules = []
+# proteins = []
 
-davisDataset = []
-with open('./data/davis.txt') as file:
-    for i, line in enumerate(file):
-        if i < limit:
-            davisDataset.append(line.split(' '))
+# davisDataset = []
+# with open('./data/davis.txt') as file:
+#     for i, line in enumerate(file):
+#         if i < limit:
+#             davisDataset.append(line.split(' '))
 
-for i, pair in enumerate(davisDataset):
-    try:
-        molecules.append(featurizer(pair[0])[0])
-    except:
-        print(f'Molecule {i} was not appended.')
-        davisNofeatures.append(i)
+# for i, pair in enumerate(davisDataset):
+#     try:
+#         molecules.append(featurizer(pair[0])[0])
+#     except:
+#         print(f'Molecule {i} was not appended.')
+#         davisNofeatures.append(i)
 
-# dataHandler.saveMoleculeEmbeddingsToCsv('./data/davisMolecules.csv', molecules)
-# del molecules
+# # dataHandler.saveMoleculeEmbeddingsToCsv('./data/davisMolecules.csv', molecules)
+# # del molecules
 
-with open ('./data/davisProteins.csv', "a") as davis_protein_file:
-    for i, pair in enumerate(davisDataset):
-        if i not in davisNofeatures:
-            protvec.sequences2protvecsCSV(davis_protein_file, [pair[1]])
+# with open ('./data/davisProteins.csv', "a") as davis_protein_file:
+#     for i, pair in enumerate(davisDataset):
+#         if i not in davisNofeatures:
+#             protvec.sequences2protvecsCSV(davis_protein_file, [pair[1]])
 
 ############################################################################
 # Scores
@@ -91,3 +91,30 @@ with open ('./data/davisProteins.csv', "a") as davis_protein_file:
 
 # f.close()
 
+# ############################################################################
+# # AAU dataset
+# ############################################################################
+
+def readFASTAsFromFile(fileName):
+    '''
+    :param fileName:
+    :return: genome sequences
+    '''
+    with open(fileName, 'r') as file:
+        sequences = []
+        genome = ''
+        for line in file:
+            if line[0] != '>':
+                genome += line.strip()
+            else:
+                sequences.append(genome.upper())
+                genome = ''
+        sequences.append(genome.upper())
+        del sequences[0]
+        return sequences
+
+aau_proteins = readFASTAsFromFile('./data/proteins_FASTA.txt')
+
+with open ('./data/aauProteins.csv', "a") as aau_protein_file:
+    for protein in aau_proteins:
+        protvec.sequences2protvecsCSV(aau_protein_file, [protein])
