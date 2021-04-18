@@ -3,37 +3,32 @@ from rdkit.Chem import Draw
 from itertools import islice
 from IPython.display import Image, display
 
-def display_images(filenames):
+def display_images(file_names):
     """Helper to pretty-print images."""
-    for file in filenames:
+    for file in file_names:
         display(Image(file))
 
 def mols_to_pngs(mols, basename="test"):
     """Helper to write RDKit mols to png files."""
-    filenames = []
+    file_names = []
     for i, mol in enumerate(mols):
-        filename = "%s%d.png" % (basename, i)
-        Draw.MolToFile(mol, filename, (1920,1080))
-        filenames.append(filename)
-    return filenames
+        file_name = "%s%d.png" % (basename, i)
+        Draw.MolToFile(mol, file_name, (1920,1080))
+        file_names.append(file_name)
+    return file_names
 
 
-def printSequencesToFile(items):
-    # Print the sequences
-    print(len(items))
-    f = open('drugbank_FASTA.txt', 'w', encoding="utf-8")
+def print_sequences_to_file(items):
+    sequences_file = open('drugbank_FASTA.txt', 'w', encoding='utf-8')
+    ids_file = open('drugbank_IDs.txt', 'w', encoding='utf-8')
     for key in items:
-        f.write(f'{items[key]}\n')
-    f.close()
+        sequences_file.write(f'{items[key]}\n')
+        ids_file.write(f'{key}\n')
+    sequences_file.close()
+    ids_file.close()
 
-    # Print the Ids
-    f = open('drugbank_IDs.txt', 'w', encoding="utf-8")
-    for key in items:
-        f.write(f'{key}\n')
-    f.close()
-
-def printLabels():
-    f = open('drugbank_Labels.txt', 'w', encoding="utf-8")
+def print_labels_to_file():
+    f = open('drugbank_Labels.txt', 'w', encoding='utf-8')
     for i in range(232):
         if i < 116:
             f.write(f'1\n')

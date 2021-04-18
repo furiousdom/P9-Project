@@ -19,15 +19,15 @@ CONN_STRING = """host='localhost' port='5434' dbname='xmlDB' user='postgres' pas
 
 # Open a DB session
 
-dbSession = psycopg2.connect(host='localhost', port='5434', dbname='xmlDB', password='4523', user='postgres')
+db_session = psycopg2.connect(host='localhost', port='5434', dbname='xmlDB', password='4523', user='postgres')
 
 # Open a database cursor
 
-dbCursor = dbSession.cursor()
+db_cursor = db_session.cursor()
 
 sqlCreateTable = "CREATE TABLE drugTable(id bigint, name text, content xml);"
-dbCursor.execute(sqlCreateTable)
-dbSession.commit()
+db_cursor.execute(sqlCreateTable)
+db_session.commit()
 
 # Identify Root of the Tree
 root = tree.getroot()
@@ -39,19 +39,19 @@ for child in root:
     name = child.find(xmlns + "name")
     print(iterator, ": ", name.text)
     #print(etree.tostring(child))
-    xmlstr = str(etree.tostring(child))
-    xmlname = str(name.text)
+    xml_str = str(etree.tostring(child))
+    xml_name = str(name.text)
 
-    xmlstr = xmlstr[2:-1].replace("'", "''")
-    xmlname = xmlname.replace("'","''")
+    xml_str = xml_str[2:-1].replace("'", "''")
+    xml_name = xml_name.replace("'","''")
 
-    xmlstr = xmlstr.replace('\n', '')
-    xmlname = xmlname.replace('\n', '')
-    sqlInsertRow1 = "INSERT INTO drugtable values("+str(iterator)+", '"+xmlname+"', '"+xmlstr[:-2]+"');"
+    xml_str = xml_str.replace('\n', '')
+    xml_name = xml_name.replace('\n', '')
+    sql_insert_row = "INSERT INTO drugtable values("+str(iterator)+", '"+xml_name+"', '"+xml_str[:-2]+"');"
     iterator += 1
     try:
-        dbCursor.execute(sqlInsertRow1)
-        dbSession.commit()
+        db_cursor.execute(sql_insert_row)
+        db_session.commit()
     except:
         errors += 1
 

@@ -13,17 +13,17 @@ def parse(dataset, parser):
 
     if parser == 'SMILES':
         print('SMILES Parser start...')
-        result = parseSmiles(root)
+        result = parse_smiles(root)
         print('Parser finished.')
         return result
     elif parser == 'FASTA':
         print('FASTA Parser start...')
-        result = parseFasta(root)
+        result = parse_fasta(root)
         print('Parser finished.')
         return result
 
 
-def parseSMILESandFASTA(dataset):
+def parse_smiles_and_fasta(dataset):
     """
     Loads the specified XML and parses it for either SMILES or FASTA strings.
     """
@@ -32,14 +32,14 @@ def parseSMILESandFASTA(dataset):
     print('Loading completed.')
 
     print('SMILES Parser start...')
-    smiles = parseSmiles(root)
+    smiles = parse_smiles(root)
     print('Parser finished.')
     print('FASTA Parser start...')
-    fasta = parseFasta(root)
+    fasta = parse_fasta(root)
     print('Parser finished.')
     return smiles, fasta
 
-def parseSmiles(root):
+def parse_smiles(root):
     """
     Parses the loaded XML for SMILES strings. Returns a dictionary of
     molecules with keys as drug names and SMILES strings as values.
@@ -59,7 +59,7 @@ def parseSmiles(root):
                     small_molecules[id.text] = value.text
     return small_molecules
 
-def parseFasta(root):
+def parse_fasta(root):
     proteins = {}
 
     for child in root:
@@ -73,15 +73,15 @@ def parseFasta(root):
                     proteins[id.text] = sequence.text
     return proteins
 
-def readProteinIds():
+def read_protein_ids():
     ids = []
-    f = open('./data/drugbank_IDs.txt', 'r', encoding="utf-8")
-    for line in f.readlines():
+    drugbank_ids_file = open('./data/drugbank_ids.txt', 'r', encoding="utf-8")
+    for line in drugbank_ids_file.readlines():
         ids.append(line.strip())
-    f.close()
+    drugbank_ids_file.close()
     return ids
 
-def parseExtIds(dataset):
+def parse_ext_ids(dataset):
     """
     Loads the specified XML and parses it for CIDs and Uniprot IDs.
     """
@@ -89,37 +89,37 @@ def parseExtIds(dataset):
     root = etree.parse(xdata[dataset]).getroot()
     print('Loading completed.')
     print('Parsing started...')
-    cids = parseCID(root)
-    uniprots = parseUniprotIds(root)
+    cids = parse_cid(root)
+    uniprots = parse_uniprot_ids(root)
     print('Parsing completed.')
     return cids, uniprots
 
-def parseCID(root):
+def parse_cid(root):
     small_molecules = {}
 
     for child in root:
         id = child.find(xdata['ns'] + 'drugbank-id')
         atts = child.attrib
         if atts['type'] == 'small molecule':
-            externalIdentifiers = child.find(xdata['ns'] + 'external-identifiers')
-            for extIdentifier in externalIdentifiers:
-                resource = extIdentifier.find(xdata['ns'] + 'resource')
-                identifier = extIdentifier.find(xdata['ns'] + 'identifier')
+            external_identifiers = child.find(xdata['ns'] + 'external-identifiers')
+            for ext_identifier in external_identifiers:
+                resource = ext_identifier.find(xdata['ns'] + 'resource')
+                identifier = ext_identifier.find(xdata['ns'] + 'identifier')
                 if resource.text == 'PubChem Compound':
                     small_molecules[id.text] = identifier.text
     return small_molecules
 
-def parseUniprotIds(root):
+def parse_uniprot_ids(root):
     small_molecules = {}
 
     for child in root:
         id = child.find(xdata['ns'] + 'drugbank-id')
         atts = child.attrib
         if atts['type'] == 'biotech':
-            externalIdentifiers = child.find(xdata['ns'] + 'external-identifiers')
-            for extIdentifier in externalIdentifiers:
-                resource = extIdentifier.find(xdata['ns'] + 'resource')
-                identifier = extIdentifier.find(xdata['ns'] + 'identifier')
+            external_identifiers = child.find(xdata['ns'] + 'external-identifiers')
+            for ext_identifier in external_identifiers:
+                resource = ext_identifier.find(xdata['ns'] + 'resource')
+                identifier = ext_identifier.find(xdata['ns'] + 'identifier')
                 if resource.text == 'UniProtKB':
                     small_molecules[id.text] = identifier.text
     return small_molecules

@@ -1,96 +1,92 @@
-import math
 import json
 import psycopg2
+import numpy as np
 import pandas as pd
 import deepchem as dc
-from xdparser import parseExtIds, parseSMILESandFASTA
-import numpy as np
+from xdparser import parse_ext_ids, parse_smiles_and_fasta
 
 # ==============================================================================
 # General helper functions
 # ==============================================================================
 
-def loadJsonObjFromFile(fileName):
-    jsonFile = open(fileName, 'r', encoding='utf-8')
-    jsonObj = json.load(jsonFile)
-    jsonFile.close()
-    return jsonObj
+def load_json_obj_from_file(file_name):
+    json_file = open(file_name, 'r', encoding='utf-8')
+    json_obj = json.load(json_file)
+    json_file.close()
+    return json_obj
 
-def saveJsonObjToFile(fileName, obj):
-    jsonFile = open(fileName, 'w', encoding='utf-8')
+def save_json_obj_from_file(file_name, obj):
+    json_file = open(file_name, 'w', encoding='utf-8')
     data = json.dumps(obj)
-    jsonFile.write(data)
-    jsonFile.close()
+    json_file.write(data)
+    json_file.close()
 
-def saveItemsToTxt(fileName, items):
-    print(len(items))
-    f = open(fileName, 'w', encoding="utf-8")
-    for item in items:
-        f.write(f'{item}\n')
-    f.close()
+def save_items_to_txt_by_line(file_name, items):
+    with open(file_name, 'w', encoding="utf-8") as file:
+        for item in items:
+            file.write(f'{item}\n')
 
-def saveLabelsTxtFile(fileName, num_of_samples, num_of_positive_samples):
-    f = open(fileName, 'w', encoding='utf-8')
-    for i in range(num_of_samples):
-        if i < num_of_positive_samples:
-            f.write('1\n')
-        else:
-            f.write('0\n')
+def save_labels_to_txt_file(file_name, num_of_samples, num_of_positive_samples):
+    with open(file_name, 'w', encoding='utf-8') as label_file:
+        for i in range(num_of_samples):
+            if i < num_of_positive_samples:
+                label_file.write('1\n')
+            else:
+                label_file.write('0\n')
 
-def extractExternalIds(dataFrame):
-    cids, uniprots = parseExtIds('fd')
+def extract_external_ids(data_frame):
+    cids, uniprots = parse_ext_ids('fd')
     ids = []
 
-    for indx, row in dataFrame.iterrows():
+    for indx, row in data_frame.iterrows():
         cid = str(row['chemical_cid'])
         uniprot = row['uniport_accession']
 
         if cid in cids.values() and uniprot in uniprots.values():
-            tempcid = list(cids.keys())[list(cids.values()).index(cid)]
-            tempuni = list(uniprots.keys())[list(uniprots.values()).index(uniprot)]
-            ids.append((tempcid, tempuni))
+            temp_cid = list(cids.keys())[list(cids.values()).index(cid)]
+            temp_uni = list(uniprots.keys())[list(uniprots.values()).index(uniprot)]
+            ids.append((temp_cid, temp_uni))
     return ids
 
-def extractSmilesListFromPairs(pairs):
+def extract_smiles_list_from_pairs(pairs):
     return [pair[0] for pair in pairs]
 
-def extractFastaListFromPairs(pairs):
+def extract_fasta_list_from_pairs(pairs):
     return [pair[1] for pair in pairs]
 
-def saveFastaForPyFeat(fileName, smilesFastaPairs):
-    fastaList = extractFastaListFromPairs(smilesFastaPairs)
-    saveItemsToTxt(fileName, fastaList)
+def save_fasta_for_pyfeat(file_name, smiles_fasta_pairs):
+    fasta_list = extract_fasta_list_from_pairs(smiles_fasta_pairs)
+    save_items_to_txt_by_line(file_name, fasta_list)
 
-def saveSmilesForFeaturizer(fileName, pairs):
-    smilesList = extractSmilesListFromPairs(pairs)
-    saveJsonObjToFile(fileName, smilesList)
+def save_smiles_for_featurizer(file_name, smiles_fasta_pairs):
+    smiles_list = extract_smiles_list_from_pairs(smiles_fasta_pairs)
+    save_json_obj_from_file(file_name, smiles_list)
 
-def saveMoleculeEmbeddingsToCsv(fileName, moleculeEmbeddings):
-    moleculesDataFrame = pd.DataFrame(moleculeEmbeddings)
-    moleculesDataFrame.to_csv(fileName)
+def save_molecule_embeddings_to_csv(file_name, molecule_embeddings):
+    molecules_data_frame = pd.DataFrame(molecule_embeddings)
+    molecules_data_frame.to_csv(file_name)
 
-def idPairsToSmilesFastaPairs(idPairs):
-    smiles, fasta = parseSMILESandFASTA('fd')
+def id_pairs_to_smiles_fasta_pairs(id_pairs):
+    smiles, fasta = parse_smiles_and_fasta('fd')
     pairs = []
-
-    for item in idPairs:
+    for item in id_pairs:
         try:
             pairs.append((smiles[item[0]], fasta[item[1]]))
         except:
             continue
     return pairs
 
-def connectDb():
-    dbSession = psycopg2.connect(
+def connect_db():
+    db_session = psycopg2.connect(
         host='localhost',
         port='5432',
         dbname='drugdb',
         user='postgres',
         password='postgres'
     )
-    return dbSession.cursor()
+    return db_session.cursor()
 
-def printDfShapeHeadTail(df, count):
+def print_df_shape_head_tail(df, count):
     print('Shape:\n')
     print(df.shape)
     print()
@@ -108,130 +104,124 @@ def printDfShapeHeadTail(df, count):
 # Negative Dataset
 # ####################################
 
-def extractNegativeExternalIds():
-    negativeSamplesDf = pd.read_csv("./data/openChemblNegativeSamples.csv")
-    negativeIdPairs = extractExternalIds(negativeSamplesDf)
-    return negativeIdPairs
+def extract_negative_external_ids():
+    negative_samples_df = pd.read_csv("./data/openChemblNegativeSamples.csv")
+    negative_id_pairs = extract_external_ids(negative_samples_df)
+    return negative_id_pairs
 
-def saveNegativeExternalIds():
-    negativeIdPairs = extractNegativeExternalIds()
-    saveJsonObjToFile('./data/negativeExternalIds', negativeIdPairs)
+def save_negative_external_ids():
+    negative_id_pairs = extract_negative_external_ids()
+    save_json_obj_from_file('./data/negativeExternalIds', negative_id_pairs)
 
-def saveNegativeSmilesFastaPairs(negativeSmilesFastaPairs):
-    saveJsonObjToFile('./data/negativeSmilesFasta.json', negativeSmilesFastaPairs)
+def save_negative_smiles_fasta_pairs(negative_smiles_fasta_pairs):
+    save_json_obj_from_file('./data/negativeSmilesFasta.json', negative_smiles_fasta_pairs)
 
-def loadNegativeSmilesFastaPairs():
-    negativeSmilesFastaPairs = loadJsonObjFromFile('./data/negativeSmilesFasta.json')
-    return negativeSmilesFastaPairs
+def load_negative_smiles_fasta_pairs():
+    negative_smiles_fasta_pairs = load_json_obj_from_file('./data/negativeSmilesFasta.json')
+    return negative_smiles_fasta_pairs
 
-def saveNegativeFastaForPyFeat(negativeSmilesFastaPairs):
-    saveFastaForPyFeat('negative_FASTA.txt', negativeSmilesFastaPairs)
+def save_negative_fasta_for_pyfeat(negative_smiles_fasta_pairs):
+    save_fasta_for_pyfeat('negative_FASTA.txt', negative_smiles_fasta_pairs)
 
-def saveNegativeSmilesForFeaturizer():
-    smilesFastaPairs = loadNegativeSmilesFastaPairs()
-    saveSmilesForFeaturizer('./data/negativeSmiles.json', smilesFastaPairs)
+def save_negative_smiles_for_featurizer():
+    smiles_fasta_pairs = load_negative_smiles_fasta_pairs()
+    save_smiles_for_featurizer('./data/negativeSmiles.json', smiles_fasta_pairs)
 
-def loadNegativeSmilesForFeaturizer():
-    negativeSmilesList = loadJsonObjFromFile('./data/negativeSmiles.json')
-    return negativeSmilesList
+def load_negative_smiles_for_featurizer():
+    negative_smiles_list = load_json_obj_from_file('./data/negativeSmiles.json')
+    return negative_smiles_list
 
-def makeNegativeMoleculeCsv():
+def make_negative_molecule_csv():
     # Don't forget to delete the first row in the newly created file
     featurizer = dc.feat.Mol2VecFingerprint()
-    negativeSmilesList = loadNegativeSmilesForFeaturizer()
-    negativeMolecules = featurizer(negativeSmilesList)
-    saveMoleculeEmbeddingsToCsv('./data/negativeMoleculesDataset.csv', negativeMolecules)
+    negative_smiles_list = load_negative_smiles_for_featurizer()
+    negative_molecules = featurizer(negative_smiles_list)
+    save_molecule_embeddings_to_csv('./data/negativeMoleculesDataset.csv', negative_molecules)
 
-# negativeIdPairs = loadJsonObjFromFile('./data/negativeIds.json')
-# negativeSmilesFastaPairs = idPairsToSmilesFastaPairs(negativeIdPairs)
-# saveNegativeSmilesForFeaturizer()
-makeNegativeMoleculeCsv()
+# negativeIdPairs = load_json_obj_from_file('./data/negativeIds.json')
+# negative_smiles_fasta_pairs = id_pairs_to_smiles_fasta_pairs(negativeIdPairs)
+# save_negative_smiles_for_featurizer()
+# make_negative_molecule_csv()
 
 # ####################################
 # Positive Dataset
 # ####################################
 
-def getPositiveIdPairs():
-    dbCursor = connectDb()
-    dbCursor.execute('SELECT drug_id_1, drug_id_2 FROM public.drug_interactions_table;')
-    positiveIdPairs = dbCursor.fetchall()
-    return positiveIdPairs
+def get_positive_id_pairs():
+    db_cursor = connect_db()
+    db_cursor.execute('SELECT drug_id_1, drug_id_2 FROM public.drug_interactions_table;')
+    positive_id_pairs = db_cursor.fetchall()
+    return positive_id_pairs
 
-def savePositiveSmilesFastaPairs(positiveSmilesFastaPairs):
-    saveJsonObjToFile('./data/positiveSmilesFasta.json', positiveSmilesFastaPairs)
+def save_positive_smiles_fasta_pairs(positive_smiles_fasta_pairs):
+    save_json_obj_from_file('./data/positive_smiles_fasta.json', positive_smiles_fasta_pairs)
 
-def loadPositiveSmilesFastaPairs():
-    positiveSmilesFastaPairs = loadJsonObjFromFile('./data/positiveSmilesFasta.json')
-    return positiveSmilesFastaPairs
+def load_positive_smiles_fasta_pairs():
+    positive_smiles_fasta_pairs = load_json_obj_from_file('./data/positive_smiles_fasta.json')
+    return positive_smiles_fasta_pairs
 
-def savePositiveFastaForPyfeat(positiveSmilesFastaPairs):
-    saveFastaForPyFeat('positive_FASTA.txt', positiveSmilesFastaPairs)
+def save_positive_fasta_for_pyfeat(positive_smiles_fasta_pairs):
+    save_fasta_for_pyfeat('positive_fasta.txt', positive_smiles_fasta_pairs)
 
-def savePositiveSmilesForFeaturizer():
-    smilesFastaPairs = loadPositiveSmilesFastaPairs()
-    saveSmilesForFeaturizer('./data/positiveSmilesList.json', smilesFastaPairs)
+def save_positive_smiles_for_featurizer():
+    smiles_fasta_pairs = load_positive_smiles_fasta_pairs()
+    save_smiles_for_featurizer('./data/positive_smiles_list.json', smiles_fasta_pairs)
 
-def loadPositiveSmilesForFeaturizer():
-    positiveSmilesList = loadJsonObjFromFile('./data/positiveSmilesList.json')
-    return positiveSmilesList
+def load_positive_smiles_for_featurizer():
+    positive_smiles_list = load_json_obj_from_file('./data/positive_smiles_list.json')
+    return positive_smiles_list
 
-def makePositiveMoleculeCsv():
-    # If errors arive while featurizing the molecules, it will screw up the CSV file
-    # Loading 1000 samples doesn't yield errors meaning CSV is created normally
-    # Don't forget to delete the first row in the newly created file
+def make_positive_molecule_csv():
     featurizer = dc.feat.Mol2VecFingerprint()
-    positiveSmilesList = loadPositiveSmilesForFeaturizer()[:20000]
-    positiveMolecules = featurizer(positiveSmilesList)
-    indicies = [i for i, x in enumerate(positiveMolecules) if x.size == 0]
-    saveJsonObjToFile('./data/problematic_indicies.json', indicies)
-    positiveMolecules = np.delete(positiveMolecules, indicies, 0)
+    positive_smiles_list = load_positive_smiles_for_featurizer()[:20000]
+    positive_molecules = featurizer(positive_smiles_list)
+    indicies = [i for i, x in enumerate(positive_molecules) if x.size == 0]
+    save_json_obj_from_file('./data/problematic_indicies.json', indicies)
+    positive_molecules = np.delete(positive_molecules, indicies, 0)
     fixed_positive_molecules = []
-    for l in positiveMolecules:
-        fixed_positive_molecules.append(list(l))
-    saveMoleculeEmbeddingsToCsv('./data/positiveMoleculesDataset.csv', fixed_positive_molecules)
+    for pos_mol in positive_molecules:
+        fixed_positive_molecules.append(list(pos_mol))
+    save_molecule_embeddings_to_csv('./data/positive_molecules_dataset.csv', fixed_positive_molecules)
 
-# positiveIdPairs = getPositiveIdPairs()
-# positiveSmilesFastaPairs = idPairsToSmilesFastaPairs(positiveIdPairs)
-# makePositiveMoleculeCsv()
+# positive_id_pairs = get_positive_id_pairs()
+# positive_smiles_fasta_pairs = id_pairs_to_smiles_fasta_pairs(positive_id_pairs)
+# make_positive_molecule_csv()
 
 # ####################################
 # Positive & Negative Dataset
 # ####################################
 
-def saveProteinsForFeaturizer():
-    positiveSmilesFastaPairs = loadPositiveSmilesFastaPairs()[:20000]
-    positiveFastaList = [pair[1] for pair in positiveSmilesFastaPairs]
-    indicies = loadJsonObjFromFile('./data/problematic_indicies.json')
+def save_proteins_for_featurizer():
+    positive_smiles_fasta_pairs = load_positive_smiles_fasta_pairs()[:20000]
+    positive_fasta_list = [pair[1] for pair in positive_smiles_fasta_pairs]
+    indicies = load_json_obj_from_file('./data/problematic_indicies.json')
     for idx in indicies:
-        positiveFastaList.pop(idx)
-    negativeSmilesFastaPairs = loadNegativeSmilesFastaPairs()
-    negativeFastaList = [pair[1] for pair in negativeSmilesFastaPairs]
-    fastaList = positiveFastaList + negativeFastaList
-    saveItemsToTxt('./data/proteins_FASTA.txt', fastaList)
-    # Change numbers in line below as needed
-    # saveLabelsTxtFile('./data/labels_FASTA.txt', 1241, 1000)
+        positive_fasta_list.pop(idx)
+    negative_smiles_fasta_pairs = load_negative_smiles_fasta_pairs()
+    negative_fasta_list = [pair[1] for pair in negative_smiles_fasta_pairs]
+    fasta_list = positive_fasta_list + negative_fasta_list
+    save_items_to_txt_by_line('./data/proteins_fasta.txt', fasta_list)
 
-def saveMoleculeDataFrameToCsv():
-    positiveSmilesList = loadPositiveSmilesForFeaturizer()[:1000]
-    negativeSmilesList = loadNegativeSmilesForFeaturizer()
-    smilesList = positiveSmilesList + negativeSmilesList
+def save_molecule_dataframe_to_csv():
+    positive_smiles_list = load_positive_smiles_for_featurizer()[:20000]
+    negative_smiles_list = load_negative_smiles_for_featurizer()
+    smiles_list = positive_smiles_list + negative_smiles_list
     featurizer = dc.feat.Mol2VecFingerprint()
-    molecules = featurizer(smilesList)
-    saveMoleculeEmbeddingsToCsv('./data/moleculeDataset.csv', molecules)
+    molecules = featurizer(smiles_list)
+    save_molecule_embeddings_to_csv('./data/molecules_dataset.csv', molecules)
 
 def combine_pos_neg_csvs():
-    positive_molecules_df = pd.read_csv('./data/positiveMoleculesDataset.csv')
-    negative_molecules_df = pd.read_csv('./data/negativeMoleculesDataset.csv')
-    frames = [positive_molecules_df, negative_molecules_df]
-    molecules_df = pd.concat(frames)
+    positive_molecules_df = pd.read_csv('./data/positive_molecules_dataset.csv')
+    negative_molecules_df = pd.read_csv('./data/negative_molecules_dataset.csv')
+    molecules_df = pd.concat([positive_molecules_df, negative_molecules_df])
     molecules_df.to_csv('./data/molecules_dataset.csv')
 
-def readFASTAsFromFile(fileName):
+def read_fastas_from_file(file_name):
     '''
-    :param fileName:
+    :param file_name:
     :return: genome sequences
     '''
-    with open(fileName, 'r') as file:
+    with open(file_name, 'r') as file:
         sequences = []
         genome = ''
         for line in file:
@@ -244,16 +234,10 @@ def readFASTAsFromFile(fileName):
         del sequences[0]
         return sequences
 
-def load_binary_scores(filename, threshold, preprocess = False):
-    scores_list = []
-    f = open(filename, 'r')
-    for line in f:
-        score = float(line)
-        if preprocess:
-            score = -1 * math.log10(score/pow(10, 9))
-        if score >= threshold:
-            scores_list.append([0, 1])
-        else:
-            scores_list.append([1, 0])
-    f.close()
-    return scores_list
+def make_aau_scores_file(dataset_name, total_number, positive_count):
+    with open(f'./data/datasets/{dataset_name}/scores.txt', 'w') as file:
+        for i in range(total_number):
+            if i < positive_count:
+                file.write('0\n')
+            else:
+                file.write('1\n')

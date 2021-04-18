@@ -116,17 +116,17 @@ def formatprotvecsnormalized(protvecs):
     protfeatures = np.array(protfeatures).reshape(len(protvecs),len(protfeatures))
     return protfeatures
 
-def sequences2protvecsCSV(filename, seqs, kmersdict=threemersidx, embeddingweights=embeddingMat):
+def sequences2protvecsCSV(file_name, seqs, kmersdict=threemersidx, embeddingweights=embeddingMat):
     #Convert a list of sequences to protvecs and save protvecs to a csv file
     #ARGUMENTS;
-    #filename: string, name of csv file to save to, i.e. "sampleprotvecs.csv"
+    #file_name: string, name of csv file to save to, i.e. "sampleprotvecs.csv"
     #seqs: list, list of amino acid sequences
     #kmersdict: dict to look up index of kmer on embedding, default: Asgari's embedding index
     #embeddingweights: 2D list or np.array, embedding vectors, default: Asgari's embedding vectors
 
     swissprotvecs = Parallel(n_jobs=num_cores)(delayed(protvec)(kmersdict, seq, embeddingweights) for seq in seqs)
     swissprotvecsdf = pd.DataFrame(formatprotvecs(swissprotvecs))
-    swissprotvecsdf.to_csv(filename, index=False, header=False)
+    swissprotvecsdf.to_csv(file_name, index=False, header=False)
     return swissprotvecsdf
 
 def featurize(seqs, kmersdict=threemersidx, embeddingweights=embeddingMat):
