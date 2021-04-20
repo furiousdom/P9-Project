@@ -105,7 +105,7 @@ def print_df_shape_head_tail(df, count):
 # ####################################
 
 def extract_negative_external_ids():
-    negative_samples_df = pd.read_csv("./data/openChemblNegativeSamples.csv")
+    negative_samples_df = pd.read_csv("./data/open_chembl_negative_samples.csv")
     negative_id_pairs = extract_external_ids(negative_samples_df)
     return negative_id_pairs
 
@@ -234,10 +234,12 @@ def read_fastas_from_file(file_name):
         del sequences[0]
         return sequences
 
-def make_aau_scores_file(dataset_name, total_number, positive_count):
-    with open(f'./data/datasets/{dataset_name}/scores.txt', 'w') as file:
+def make_aau_scores_file(dataset_name, total_number, negative_count):
+    with open(f'./data/datasets/{dataset_name}/binding_affinities.txt', 'w') as file:
         for i in range(total_number):
-            if i < positive_count:
-                file.write('0\n')
-            else:
+            if i < total_number - negative_count:
                 file.write('1\n')
+            else:
+                file.write('0\n')
+
+make_aau_scores_file('aau20000', 20027, 241)

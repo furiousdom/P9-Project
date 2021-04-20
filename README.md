@@ -51,4 +51,3 @@ For mol2vec:
 PyFeat:
     python ./Codes/main.py --sequenceType=Protein --testDataset=1 --fasta=./Datasets/Protein/PDB186_independentFASTA.txt --label=./Datasets/Protein/PDB186_independentLabel.txt --kTuple=3 --kGap=5 --pseudoKNC=0 --zCurve=0 --gcContent=0 --cumulativeSkew=0 --atgcRatio=0 --monoMono=0 --monoDi=0 --monoTri=0 --diMono=0 --diDi=0 --diTri=0 --triMono=1 --triDi=0
 
-17.04.2021: TODO: Follow instructions in next lines to see if refactored code works
