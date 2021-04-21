@@ -36,5 +36,5 @@ def run_test_session():
         'x_test': davis_X,
         'y_test': davis_Y
     }]
-    base_model.test(datasets, checkpoint_path('base_model'))
+    # base_model.test(datasets, checkpoint_path('base_model'))
     dcnn_model.test(datasets, checkpoint_path('dcnn_model'))

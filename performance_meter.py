@@ -1,5 +1,6 @@
 import numpy as np
 import emetrics
+from data_handler import save_predictions
 # from lifelines.utils import concordance_index
 
 def calc_accuracy(y_test, predictions):
@@ -30,6 +31,8 @@ def measure_and_print_performance(dataset_name, y_test, predictions):
     mse = round(emetrics.get_k(y_test, predictions), 3)
     r2m = round(emetrics.get_rm2(y_test, predictions), 3)
     aupr = round(emetrics.get_aupr(y_test, predictions), 3)
+
+    save_predictions(dataset_name, y_test, predictions)
 
     print(f'{dataset_name} dataset:')
     print(f'\tAccuracy: {acc}%, predicted {counter} out of {y_test.shape[0]}')

@@ -15,7 +15,7 @@ def load_json_obj_from_file(file_name):
     json_file.close()
     return json_obj
 
-def save_json_obj_from_file(file_name, obj):
+def save_json_obj_to_file(file_name, obj):
     json_file = open(file_name, 'w', encoding='utf-8')
     data = json.dumps(obj)
     json_file.write(data)
@@ -60,7 +60,7 @@ def save_fasta_for_pyfeat(file_name, smiles_fasta_pairs):
 
 def save_smiles_for_featurizer(file_name, smiles_fasta_pairs):
     smiles_list = extract_smiles_list_from_pairs(smiles_fasta_pairs)
-    save_json_obj_from_file(file_name, smiles_list)
+    save_json_obj_to_file(file_name, smiles_list)
 
 def save_molecule_embeddings_to_csv(file_name, molecule_embeddings):
     molecules_data_frame = pd.DataFrame(molecule_embeddings)
@@ -111,10 +111,10 @@ def extract_negative_external_ids():
 
 def save_negative_external_ids():
     negative_id_pairs = extract_negative_external_ids()
-    save_json_obj_from_file('./data/negativeExternalIds', negative_id_pairs)
+    save_json_obj_to_file('./data/negativeExternalIds', negative_id_pairs)
 
 def save_negative_smiles_fasta_pairs(negative_smiles_fasta_pairs):
-    save_json_obj_from_file('./data/negativeSmilesFasta.json', negative_smiles_fasta_pairs)
+    save_json_obj_to_file('./data/negativeSmilesFasta.json', negative_smiles_fasta_pairs)
 
 def load_negative_smiles_fasta_pairs():
     negative_smiles_fasta_pairs = load_json_obj_from_file('./data/negativeSmilesFasta.json')
@@ -154,7 +154,7 @@ def get_positive_id_pairs():
     return positive_id_pairs
 
 def save_positive_smiles_fasta_pairs(positive_smiles_fasta_pairs):
-    save_json_obj_from_file('./data/positive_smiles_fasta.json', positive_smiles_fasta_pairs)
+    save_json_obj_to_file('./data/positive_smiles_fasta.json', positive_smiles_fasta_pairs)
 
 def load_positive_smiles_fasta_pairs():
     positive_smiles_fasta_pairs = load_json_obj_from_file('./data/positive_smiles_fasta.json')
@@ -176,16 +176,16 @@ def make_positive_molecule_csv():
     positive_smiles_list = load_positive_smiles_for_featurizer()[:20000]
     positive_molecules = featurizer(positive_smiles_list)
     indicies = [i for i, x in enumerate(positive_molecules) if x.size == 0]
-    save_json_obj_from_file('./data/problematic_indicies.json', indicies)
+    save_json_obj_to_file('./data/positive_molecule_problematic_indicies.json', indicies)
     positive_molecules = np.delete(positive_molecules, indicies, 0)
     fixed_positive_molecules = []
     for pos_mol in positive_molecules:
         fixed_positive_molecules.append(list(pos_mol))
-    save_molecule_embeddings_to_csv('./data/positive_molecules_dataset.csv', fixed_positive_molecules)
+    save_molecule_embeddings_to_csv('./data/positive_molecules.csv', fixed_positive_molecules)
 
 # positive_id_pairs = get_positive_id_pairs()
 # positive_smiles_fasta_pairs = id_pairs_to_smiles_fasta_pairs(positive_id_pairs)
-# make_positive_molecule_csv()
+make_positive_molecule_csv()
 
 # ####################################
 # Positive & Negative Dataset
@@ -194,13 +194,13 @@ def make_positive_molecule_csv():
 def save_proteins_for_featurizer():
     positive_smiles_fasta_pairs = load_positive_smiles_fasta_pairs()[:20000]
     positive_fasta_list = [pair[1] for pair in positive_smiles_fasta_pairs]
-    indicies = load_json_obj_from_file('./data/problematic_indicies.json')
+    indicies = load_json_obj_from_file('./data/positive_proteins_problematic_indicies.json')
     for idx in indicies:
         positive_fasta_list.pop(idx)
     negative_smiles_fasta_pairs = load_negative_smiles_fasta_pairs()
     negative_fasta_list = [pair[1] for pair in negative_smiles_fasta_pairs]
     fasta_list = positive_fasta_list + negative_fasta_list
-    save_items_to_txt_by_line('./data/proteins_fasta.txt', fasta_list)
+    save_items_to_txt_by_line('./data/protein_sequences.txt', fasta_list)
 
 def save_molecule_dataframe_to_csv():
     positive_smiles_list = load_positive_smiles_for_featurizer()[:20000]
@@ -208,13 +208,13 @@ def save_molecule_dataframe_to_csv():
     smiles_list = positive_smiles_list + negative_smiles_list
     featurizer = dc.feat.Mol2VecFingerprint()
     molecules = featurizer(smiles_list)
-    save_molecule_embeddings_to_csv('./data/molecules_dataset.csv', molecules)
+    save_molecule_embeddings_to_csv('./data/molecules.csv', molecules)
 
 def combine_pos_neg_csvs():
-    positive_molecules_df = pd.read_csv('./data/positive_molecules_dataset.csv')
-    negative_molecules_df = pd.read_csv('./data/negative_molecules_dataset.csv')
+    positive_molecules_df = pd.read_csv('./data/positive_molecules.csv')
+    negative_molecules_df = pd.read_csv('./data/negative_molecules.csv')
     molecules_df = pd.concat([positive_molecules_df, negative_molecules_df])
-    molecules_df.to_csv('./data/molecules_dataset.csv')
+    molecules_df.to_csv('./data/molecules.csv')
 
 def read_fastas_from_file(file_name):
     '''
@@ -242,4 +242,9 @@ def make_aau_scores_file(dataset_name, total_number, negative_count):
             else:
                 file.write('0\n')
 
-make_aau_scores_file('aau20000', 20027, 241)
+# make_aau_scores_file('aau20000', 20027, 241)
+
+def save_predictions(dataset_name, y_test, predictions):
+    with open(f'./data/{dataset_name}-results.txt', 'w') as file:
+        for i in range(len(y_test)):
+            file.write(f'{y_test[i]} {predictions[i]}\n')
