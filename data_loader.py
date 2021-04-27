@@ -19,6 +19,8 @@ def load_binary_interactions(file_name, threshold, preprocess = False):
 def load_dataset(dataset_name, binding_affinity_threshold):
     molecules = pd.read_csv(f'./data/datasets/{dataset_name}/molecules.csv')
     proteins = pd.read_csv(f'./data/datasets/{dataset_name}/proteins.csv')
+    molecules.drop(molecules.filter(regex="Unname"),axis=1, inplace=True)
+    proteins.drop(proteins.filter(regex="Unname"),axis=1, inplace=True)
     X = np.array(pd.concat([molecules, proteins], axis=1))
     preprocess_binding_affinity = dataset_name is 'davis' or False
     Y = np.array(load_binary_interactions(

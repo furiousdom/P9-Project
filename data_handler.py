@@ -185,7 +185,7 @@ def make_positive_molecule_csv():
 
 # positive_id_pairs = get_positive_id_pairs()
 # positive_smiles_fasta_pairs = id_pairs_to_smiles_fasta_pairs(positive_id_pairs)
-make_positive_molecule_csv()
+# make_positive_molecule_csv()
 
 # ####################################
 # Positive & Negative Dataset
@@ -210,11 +210,19 @@ def save_molecule_dataframe_to_csv():
     molecules = featurizer(smiles_list)
     save_molecule_embeddings_to_csv('./data/molecules.csv', molecules)
 
-def combine_pos_neg_csvs():
+def combine_pos_neg_molecules_csvs():
     positive_molecules_df = pd.read_csv('./data/positive_molecules.csv')
     negative_molecules_df = pd.read_csv('./data/negative_molecules.csv')
     molecules_df = pd.concat([positive_molecules_df, negative_molecules_df])
-    molecules_df.to_csv('./data/molecules.csv')
+    molecules_df.to_csv('./data/datasets/aau40000/molecules.csv')
+
+def combine_pos_neg_proteins_csvs():
+    positive_proteins_df = pd.read_csv('./data/positive_proteins.csv')
+    negative_proteins_df = pd.read_csv('./data/negative_proteins.csv')
+    proteins_df = pd.concat([positive_proteins_df, negative_proteins_df])
+    proteins_df.to_csv('./data/datasets/aau40000/proteins.csv')
+
+
 
 def read_fastas_from_file(file_name):
     '''

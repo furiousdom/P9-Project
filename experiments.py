@@ -17,7 +17,7 @@ def checkpoint(checkpoint_path):
 
 def run_train_session(model_name, dataset_name, batch_size, epochs):
     aau_X, aau_Y = load_dataset(dataset_name, 1)
-    x_train, x_test, y_train, y_test = train_test_split(aau_X, aau_Y, train_size=0.85, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(aau_X, aau_Y, train_size=0.8, random_state=0)
     checkpoint_callback = checkpoint(checkpoint_path(model_name))
     if model_name is 'base_model':
         base_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback)

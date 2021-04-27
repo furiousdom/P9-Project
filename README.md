@@ -51,3 +51,17 @@ For mol2vec:
 PyFeat:
     python ./Codes/main.py --sequenceType=Protein --testDataset=1 --fasta=./Datasets/Protein/PDB186_independentFASTA.txt --label=./Datasets/Protein/PDB186_independentLabel.txt --kTuple=3 --kGap=5 --pseudoKNC=0 --zCurve=0 --gcContent=0 --cumulativeSkew=0 --atgcRatio=0 --monoMono=0 --monoDi=0 --monoTri=0 --diMono=0 --diDi=0 --diTri=0 --triMono=1 --triDi=0
 
+
+
+Currently looking up negative SMILES
+Featurize negative molecules - get problematic indicies for negative molecules
+
+Look up Negative Molecules -> Size X                                                                                    IN PROGRESS
+Featurize the Molecules -> Size X with empty Strings                                                                    TODO
+Look up the Negative Proteins -> Size Y because some can't be looked up -> List of problematic PROTEIN indices          DONE
+Remove Problematic PROTEIN indices from FEATURIZED MOLECULES -> Size Y with empty Strings
+Recalculate problematic Molecular indices from empty Strings
+Remove from Both FEATURIZED MOLECULES and LOOKED UP PROTEINS -> Size Z for both without empty strings
+Featurize Z proteins
+
+Important. Remove from end to beginning.
