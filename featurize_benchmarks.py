@@ -1,6 +1,7 @@
 import protvec
 import data_handler
 import deepchem as dc
+import numpy as np
 
 start = 10000
 limit = 30056
@@ -34,12 +35,12 @@ def featurize_kiba():
                 
     kiba_scores = []
 
-    for i in range(start, limit):
-        if i not in kiba_no_features:
+    for i in range(start - start, limit - start):
+        if i + start not in kiba_no_features:
             kiba_scores.append(kiba_json[i][2])
 
     f = open('./data/kiba_scores_rest.txt', 'w')
-    for i in range(start, limit):
+    for i in range(start - start, limit - start):
         f.write(str(kiba_scores[i]) + '\n')
     f.close()
 
@@ -61,30 +62,30 @@ def featurize_davis():
             if i >= start and i < limit:
                 davis_dataset.append(line.split(' '))
 
-    for i, pair in enumerate(davis_dataset):
-        try:
-            molecules.append(featurizer(pair[0])[0])
-        except:
-            print(f'Molecule {i} was not appended.')
-            davis_no_features.append(i)
+    # for i, pair in enumerate(davis_dataset):
+    #     try:
+    #         molecules.append(featurizer(pair[0])[0])
+    #     except:
+    #         print(f'Molecule {i} was not appended.')
+    #         davis_no_features.append(i)
     
-    molecules = np.delete(molecules, davis_no_features, 0)
-    data_handler.save_molecule_embeddings_to_csv('./data/davis_molecules_rest.csv', molecules)
-    del molecules
+    # molecules = np.delete(molecules, davis_no_features, 0)
+    # data_handler.save_molecule_embeddings_to_csv('./data/davis_molecules_rest.csv', molecules)
+    # del molecules
 
-    with open ('./data/davis_proteins_rest.csv', "a") as davis_protein_file:
-        for i, pair in enumerate(davis_dataset):
-            if i not in davis_no_features:
-                protvec.sequences2protvecsCSV(davis_protein_file, [pair[1]])
+    # with open ('./data/davis_proteins_rest.csv', "a") as davis_protein_file:
+    #     for i, pair in enumerate(davis_dataset):
+    #         if i not in davis_no_features:
+    #             protvec.sequences2protvecsCSV(davis_protein_file, [pair[1]])
 
     davis_scores = []
 
-    for i in range(start, limit):
-        if i not in davis_no_features:
+    for i in range(start - start, limit - start):
+        if i + start not in davis_no_features:
             davis_scores.append(davis_dataset[i][2])
 
     f = open('./data/davis_scores_rest.txt', 'w')
-    for i in range(start, limit):
+    for i in range(start - start, limit - start):
         f.write(str(davis_scores[i]))
     f.close()
 
