@@ -30,11 +30,11 @@ def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     FC2 = Dropout(0.1)(FC2)
     FC2 = Dense(512, activation='relu')(FC2)
 
-    predictions = Dense(2, activation='softmax')(FC2)
+    predictions = Dense(1, activation='relu')(FC2)
 
     model = Model(inputs=[XDinput, XTinput], outputs=[predictions])
     metrics=['accuracy', 'mean_squared_error']
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
 
     print(model.summary())
     # plot_model(model, to_file='data/figures/model.png')
@@ -46,13 +46,16 @@ def reshape_network_input(x_input):
     x_input[1] = x_input[1].reshape(x_input[1].shape[0], 100, 1).astype('float32')
     return x_input
 
-def train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback):
+def train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback=None):
     x_train = reshape_network_input(x_train)
     x_test = reshape_network_input(x_test)
     model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
-    model.fit(x_train, y_train, batch_size, epochs, callbacks=[checkpoint_callback])
+    if checkpoint_callback == None:
+        model.fit(x_train, y_train, batch_size, epochs)
+    else:
+        model.fit(x_train, y_train, batch_size, epochs, callbacks=[checkpoint_callback])
     predictions = model.predict(x_test)
-    measure_and_print_performance(dataset_name, y_test, predictions)
+    measure_and_print_performance(dataset_name, y_test, predictions.flatten())
 
 def test(datasets, checkpoint_path):
     model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)

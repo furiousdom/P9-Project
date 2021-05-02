@@ -41,8 +41,8 @@ def get_cindex(Y, P):
 
 
 def r_squared_error(y_obs,y_pred):
-    y_obs = np.array(y_obs)
-    y_pred = np.array(y_pred)
+    # y_obs = np.array(y_obs)
+    # y_pred = np.array(y_pred)
     y_obs_mean = [np.mean(y_obs) for y in y_obs]
     y_pred_mean = [np.mean(y_pred) for y in y_pred]
 
@@ -51,7 +51,6 @@ def r_squared_error(y_obs,y_pred):
 
     y_obs_sq = sum((y_obs - y_obs_mean)*(y_obs - y_obs_mean))
     y_pred_sq = sum((y_pred - y_pred_mean) * (y_pred - y_pred_mean) )
-
     return mult / float(y_obs_sq * y_pred_sq)
 
 
