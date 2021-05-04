@@ -18,9 +18,10 @@ def checkpoint(checkpoint_path):
 def run_train_session(model_name, dataset_name, threshold, batch_size, epochs):
     X, Y = load_dataset(dataset_name, threshold)
     x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.84, random_state=0)
-    checkpoint_callback = checkpoint(checkpoint_path(model_name))
-    base_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, 63, checkpoint_callback)
-    dcnn_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, 30, checkpoint_callback)
+    # checkpoint_callback = checkpoint(checkpoint_path('base_' + model_name))
+    # base_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, 128, checkpoint_callback)
+    checkpoint_callback = checkpoint(checkpoint_path('dcnn_' + model_name))
+    dcnn_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, 100, checkpoint_callback)
 
 def run_test_session():
     kiba_X, kiba_Y = load_dataset('kiba2', 12.1)
@@ -37,7 +38,25 @@ def run_test_session():
     base_model.test(datasets, checkpoint_path('base_model'))
     dcnn_model.test(datasets, checkpoint_path('dcnn_model'))
 
-run_train_session('kiba_model_ba', 'kiba2', 12.1, 8, 50)
-run_train_session('davis_model_ba', 'davis2', 7.0, 8, 50)
+def run_small_test_session():
+    kiba_X, kiba_Y = load_dataset('kiba2', 12.1)
+    davis_X, davis_Y = load_dataset('davis2', 7.0)
+    kiba_x_train, kiba_x_test, kiba_y_train, kiba_y_test = train_test_split(kiba_X, kiba_Y, train_size=0.84, random_state=0)
+    davis_x_train, davis_x_test, davis_y_train, davis_y_test = train_test_split(davis_X, davis_Y, train_size=0.84, random_state=0)
+    # datasets = [{
+    #     'name': 'kiba2',
+    #     'x_test': kiba_x_test,
+    #     'y_test': kiba_y_test
+    # }, {
+    datasets = [{
+        'name': 'davis2',
+        'x_test': davis_x_test,
+        'y_test': davis_y_test
+    }]
+    # base_model.test(datasets, checkpoint_path('base_model'))
+    dcnn_model.test(datasets, checkpoint_path('davis_model_ba'))
 
-# run_test_session()
+# run_train_session('model_ba_kiba', 'kiba2', 12.1, 256, 50)
+run_train_session('model_ba_davis', 'davis2', 7.0, 256, 50)
+
+# run_small_test_session()

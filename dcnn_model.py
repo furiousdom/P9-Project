@@ -63,4 +63,4 @@ def test(datasets, checkpoint_path):
     for dataset in datasets:
         x_test = reshape_network_input(dataset['x_test'])
         predictions = model.predict(x_test)
-        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions)
+        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())

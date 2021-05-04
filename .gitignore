@@ -20,3 +20,7 @@ graphs/
 
 *.sqlite3
 *.db
+
+# temp files
+foo.txt
+temp.txt

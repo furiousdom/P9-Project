@@ -13,4 +13,24 @@ def load_dataset(dataset_name):
     molecules.to_csv(f'./data/datasets/{dataset_name}/molecules.csv')
     proteins.to_csv(f'./data/datasets/{dataset_name}/proteins.csv')
 
-load_dataset('davis2')
+# load_dataset('davis2')
+
+f = open(f'./data/kiba2-results.txt', 'r')
+scores = []
+counter = 0
+for line in f.readlines():
+    splittet_line = line.split(' ')
+    ground_truth = 1 if float(splittet_line[0]) >= 12.1 else 0
+    prediction = 1 if float(splittet_line[1]) >= 12.1 else 0
+    if ground_truth == prediction:
+        counter += 1
+    scores.append([ground_truth, prediction])
+
+f.close()
+f = open(f'./data/kiba2-results-binarised.txt', 'w')
+for lines in scores:
+    f.write(f'{lines[0]} {lines[1]}\n')
+
+f.close()
+
+print(f'Accuraccy = {round(counter * 100/len(scores), 3)}')

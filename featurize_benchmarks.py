@@ -3,8 +3,8 @@ import data_handler
 import deepchem as dc
 import numpy as np
 
-start = 10000
-limit = 30056
+start = 30056
+limit = 70000
 
 ############################################################################
 # Kiba dataset
@@ -25,10 +25,10 @@ def featurize_kiba():
             kiba_no_features.append(i)
 
     molecules = np.delete(molecules, kiba_no_features, 0)
-    data_handler.save_molecule_embeddings_to_csv('./data/kiba_molecules_rest.csv', molecules)
+    data_handler.save_molecule_embeddings_to_csv('./data/kiba_molecules_rest2.csv', molecules)
     del molecules
 
-    with open ('./data/kiba_proteins_rest.csv', "a") as kiba_protein_file:
+    with open ('./data/kiba_proteins_rest2.csv', "a") as kiba_protein_file:
         for i, pair in enumerate(kiba_json):
             if i not in kiba_no_features:
                 protvec.sequences2protvecsCSV(kiba_protein_file, [pair[0]])
@@ -39,12 +39,12 @@ def featurize_kiba():
         if i + start not in kiba_no_features:
             kiba_scores.append(kiba_json[i][2])
 
-    f = open('./data/kiba_scores_rest.txt', 'w')
+    f = open('./data/kiba_scores_rest2.txt', 'w')
     for i in range(start - start, limit - start):
         f.write(str(kiba_scores[i]) + '\n')
     f.close()
 
-# featurize_kiba()
+featurize_kiba()
 
 # ############################################################################
 # # Davis dataset
@@ -89,7 +89,7 @@ def featurize_davis():
         f.write(str(davis_scores[i]))
     f.close()
 
-featurize_davis()
+# featurize_davis()
 
 ############################################################################
 # Scores
