@@ -20,14 +20,11 @@ def get_model():
     print(model.summary())
     return model
 
-def train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback=None):
+def train(dataset, batch_size, epochs, callbacks=None):
     model = get_model()
-    if checkpoint_callback == None:
-        model.fit(x_train, y_train, batch_size, epochs)
-    else:
-        model.fit(x_train, y_train, batch_size, epochs, callbacks=[checkpoint_callback])
-    predictions = model.predict(x_test)
-    measure_and_print_performance(dataset_name, y_test, predictions.flatten())
+    model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
+    predictions = model.predict(dataset['x_test'])
+    measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
 
 def test(datasets, checkpoint_path):
     model = get_model()

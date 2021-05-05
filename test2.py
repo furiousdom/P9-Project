@@ -1,12 +1,12 @@
-import pubchempy as pcp
-import pandas as pd
+import protvec
 import data_handler
 import numpy as np
+import pandas as pd
 import requests as r
+import pubchempy as pcp
 from Bio import SeqIO
 from io import StringIO
 from pyfaidx import Fasta
-import protvec
 
 LIMIT = 20000
 
@@ -35,7 +35,7 @@ def featurize_from_json():
     with open ('./data/negative_proteins.csv', "a") as file:
         for fasta in fasta_list:
             if counter % 100 == 0:
-                print(counter)      
+                print(counter)
             counter += 1
             protvec.sequences2protvecsCSV(file, [str(fasta)])
 
@@ -57,7 +57,7 @@ def make_positive_proteins_csv():
     with open ('./data/positive_proteins.csv', "a") as aau_protein_file:
         for fasta in positive_fasta_list:
             if counter % 100 == 0:
-                print(counter)      
+                print(counter)
             counter += 1
             protvec.sequences2protvecsCSV(aau_protein_file, [str(fasta)])
 

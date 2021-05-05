@@ -46,16 +46,13 @@ def reshape_network_input(x_input):
     x_input[1] = x_input[1].reshape(x_input[1].shape[0], 100, 1).astype('float32')
     return x_input
 
-def train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback=None):
-    x_train = reshape_network_input(x_train)
-    x_test = reshape_network_input(x_test)
+def train(dataset, batch_size, epochs, callbacks=None):
+    x_train = reshape_network_input(dataset['x_train'])
+    x_test = reshape_network_input(dataset['x_test'])
     model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
-    if checkpoint_callback == None:
-        model.fit(x_train, y_train, batch_size, epochs)
-    else:
-        model.fit(x_train, y_train, batch_size, epochs, callbacks=[checkpoint_callback])
+    model.fit(x_train, dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(x_test)
-    measure_and_print_performance(dataset_name, y_test, predictions.flatten())
+    measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
 
 def test(datasets, checkpoint_path):
     model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)

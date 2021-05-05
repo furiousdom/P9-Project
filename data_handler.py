@@ -3,7 +3,8 @@ import psycopg2
 import numpy as np
 import pandas as pd
 import deepchem as dc
-from xdparser import parse_ext_ids, parse_smiles_and_fasta
+from xdparser import parse_ext_ids
+from xdparser import parse_smiles_and_fasta
 
 # ==============================================================================
 # General helper functions
@@ -33,6 +34,14 @@ def save_labels_to_txt_file(file_name, num_of_samples, num_of_positive_samples):
                 label_file.write('1\n')
             else:
                 label_file.write('0\n')
+
+def json_dataset_to_csv(dataset_name):
+    json_dataset = load_json_obj_from_file('./data/' + dataset_name + '.json')
+    columns = ['FASTA', 'SMILES', 'BINDING AFFINITY']
+    if dataset_name == 'davis':
+        columns = ['SMILES', 'FASTA', 'BINDING AFFINITY']
+    df = pd.DataFrame(json_dataset, columns=columns)
+    df.to_csv('./data/' + dataset_name + '.csv')
 
 def extract_external_ids(data_frame):
     cids, uniprots = parse_ext_ids('fd')
@@ -250,9 +259,8 @@ def make_aau_scores_file(dataset_name, total_number, negative_count):
             else:
                 file.write('0\n')
 
-# make_aau_scores_file('aau20000', 20027, 241)
-
 def save_predictions(dataset_name, y_test, predictions):
     with open(f'./data/{dataset_name}-results.txt', 'w') as file:
         for i in range(len(y_test)):
             file.write(f'{y_test[i]} {predictions[i]}\n')
+

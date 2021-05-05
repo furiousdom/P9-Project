@@ -1,8 +1,8 @@
-from pubchempy import Compound
-import pandas as pd
 import data_handler
 import numpy as np
+import pandas as pd
 import deepchem as dc
+from pubchempy import Compound
 
 LIMIT = 20000
 

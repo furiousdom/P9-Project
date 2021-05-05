@@ -1,5 +1,5 @@
-import numpy as np
 import subprocess
+import numpy as np
 
 def get_aupr(Y, P):
     if hasattr(Y, 'A'): Y = Y.A
@@ -20,25 +20,21 @@ def get_aupr(Y, P):
     f.close()
     return aucpr
 
-
-
 def get_cindex(Y, P):
     summ = 0
     pair = 0
-    
+
     for i in range(1, len(Y)):
         for j in range(0, i):
             if i is not j:
                 if(Y[i] > Y[j]):
                     pair +=1
                     summ +=  1* (P[i] > P[j]) + 0.5 * (P[i] == P[j])
-        
-            
+
     if pair is not 0:
         return summ/pair
     else:
         return 0
-
 
 def r_squared_error(y_obs,y_pred):
     # y_obs = np.array(y_obs)
@@ -53,13 +49,11 @@ def r_squared_error(y_obs,y_pred):
     y_pred_sq = sum((y_pred - y_pred_mean) * (y_pred - y_pred_mean) )
     return mult / float(y_obs_sq * y_pred_sq)
 
-
 def get_k(y_obs,y_pred):
     y_obs = np.array(y_obs)
     y_pred = np.array(y_pred)
 
     return sum(y_obs*y_pred) / float(sum(y_pred*y_pred))
-
 
 def squared_error_zero(y_obs,y_pred):
     k = get_k(y_obs,y_pred)
@@ -71,7 +65,6 @@ def squared_error_zero(y_obs,y_pred):
     down= sum((y_obs - y_obs_mean)*(y_obs - y_obs_mean))
 
     return 1 - (upp / float(down))
-
 
 def get_rm2(ys_orig,ys_line):
     r2 = r_squared_error(ys_orig, ys_line)

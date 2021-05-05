@@ -15,14 +15,24 @@ def checkpoint(checkpoint_path):
         verbose=1
     )
 
+def get_dataset_split(dataset_name, X, Y):
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.8, random_state=0)
+    return {
+        'name': dataset_name,
+        'x_train': x_train,
+        'x_test': x_test,
+        'y_train': y_train,
+        'y_test': y_test
+    }
+
 def run_train_session(model_name, dataset_name, batch_size, epochs):
     aau_X, aau_Y = load_dataset(dataset_name, 1)
-    x_train, x_test, y_train, y_test = train_test_split(aau_X, aau_Y, train_size=0.8, random_state=0)
+    dataset = get_dataset_split(dataset_name, aau_X, aau_Y)
     checkpoint_callback = checkpoint(checkpoint_path(model_name))
     if model_name is 'base_model':
-        base_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback)
+        base_model.train(dataset, batch_size, epochs, [checkpoint_callback])
     elif model_name is 'dcnn_model':
-        dcnn_model.train(dataset_name, x_train, x_test, y_train, y_test, batch_size, epochs, checkpoint_callback)
+        dcnn_model.train(dataset, batch_size, epochs, [checkpoint_callback])
 
 def run_test_session():
     kiba_X, kiba_Y = load_dataset('kiba', 12.1)
@@ -36,5 +46,5 @@ def run_test_session():
         'x_test': davis_X,
         'y_test': davis_Y
     }]
-    # base_model.test(datasets, checkpoint_path('base_model'))
+    base_model.test(datasets, checkpoint_path('base_model'))
     dcnn_model.test(datasets, checkpoint_path('dcnn_model'))
