@@ -49,23 +49,23 @@ def run_test_session():
     dcnn_model.test(datasets, checkpoint_path('dcnn_model'))
 
 def run_small_test_session():
-    kiba_X, kiba_Y = load_dataset('kiba2', 12.1)
-    davis_X, davis_Y = load_dataset('davis2', 7.0)
+    kiba_X, kiba_Y = load_dataset('kiba2')
+    davis_X, davis_Y = load_dataset('davis2')
     kiba_x_train, kiba_x_test, kiba_y_train, kiba_y_test = train_test_split(kiba_X, kiba_Y, train_size=0.84, random_state=0)
     davis_x_train, davis_x_test, davis_y_train, davis_y_test = train_test_split(davis_X, davis_Y, train_size=0.84, random_state=0)
     datasets = [{
         'name': 'kiba2',
         'x_test': kiba_x_test,
         'y_test': kiba_y_test
-    }, {
-        'name': 'davis2',
-        'x_test': davis_x_test,
-        'y_test': davis_y_test
+    # }, {
+    #     'name': 'davis2',
+    #     'x_test': davis_x_test,
+    #     'y_test': davis_y_test
     }]
-    base_model.test(datasets, checkpoint_path('base_model'))
-    dcnn_model.test(datasets, checkpoint_path('davis_model_ba'))
+    base_model.test(datasets, checkpoint_path('base_model_ba_kiba'))
+    dcnn_model.test(datasets, checkpoint_path('dcnn_model_ba_kiba'))
 
-run_train_session('model_ba_kiba', 'kiba', 12.1, 256)
-run_train_session('model_ba_davis', 'davis', 7.0, 256)
+# run_train_session('model_ba_kiba', 'kiba', 12.1, 256)
+# run_train_session('model_ba_davis', 'davis', 7.0, 256)
 
-# run_small_test_session()
+run_small_test_session()

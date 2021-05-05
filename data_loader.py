@@ -23,7 +23,6 @@ def load_interactions(file_name, threshold=None, convert=False):
 
 def load_Y(dataset_name, binding_affinity_threshold=None):
     preprocess_binding_affinity = dataset_name in DATASETS_TO_PREPROCESS
-    print(f'preprocess_binding_affinity: {preprocess_binding_affinity}')
     return np.array(load_interactions(
         f'./data/datasets/{dataset_name}/binding_affinities.txt',
         binding_affinity_threshold,

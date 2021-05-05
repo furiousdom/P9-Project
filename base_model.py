@@ -31,4 +31,4 @@ def test(datasets, checkpoint_path):
     model.load_weights(checkpoint_path)
     for dataset in datasets:
         predictions = model.predict(dataset['x_test'])
-        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions)
+        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())

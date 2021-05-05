@@ -32,28 +32,24 @@ def finalize_results(y_test, predictions):
 
 def binarize_results(dataset_name, Y):
     threshold = 7.0 if dataset_name in DATASETS_TO_PREPROCESS else 12.1
-    return [binarize_score(y, threshold) for y in Y]
+    return np.array([binarize_score(y, threshold) for y in Y])
 
 def measure_and_print_performance(dataset_name, y_test, predictions):
     binary_y_test = binarize_results(dataset_name, y_test)
     binary_predictions = binarize_results(dataset_name, predictions)
 
     ci_em = emetrics.get_cindex(y_test, predictions)
-    mse_em = emetrics.get_k(y_test, predictions)
     r2m_em = emetrics.get_rm2(y_test, predictions)
     aupr_em = emetrics.get_aupr(binary_y_test, binary_predictions)
 
     mse_sk = sk_mse(y_test, predictions)
-    mse_our = calc_mean_squared_error(y_test, predictions)
     # avg_precision = sk_ap(y_test, predictions)
 
     save_predictions(dataset_name, y_test, predictions)
 
     print(f'{dataset_name} dataset:')
     print(f'\tConcordance Index: {ci_em}')
-    print(f'\tMean Squared Error: {mse_em}')
-    print(f'\tMean Squared Error calculated with sklearn: {mse_sk}')
-    print(f'\tMean Squared Error calculated with our function: {mse_our}')
+    print(f'\tMean Squared Error: {mse_sk}')
     print(f'\tr2m: {r2m_em}')
     print(f'\tAUPR: {aupr_em}')
     # print(f'\tAverage Precision: {avg_precision}')
