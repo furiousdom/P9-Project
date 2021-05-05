@@ -75,6 +75,21 @@ def save_molecule_embeddings_to_csv(file_name, molecule_embeddings):
     molecules_data_frame = pd.DataFrame(molecule_embeddings)
     molecules_data_frame.to_csv(file_name)
 
+def concatenate_dataset(dataset_name):
+    dataset_path = f'./data/datasets/{dataset_name}/'
+    molecules_all = pd.read_csv(dataset_path + 'molecules_all.csv')
+    molecules_rest = pd.read_csv(dataset_path + 'molecules_rest.csv')
+    molecules = pd.concat([molecules_all, molecules_rest], axis=0)
+    molecules.drop(molecules.filter(regex="Unname"),axis=1, inplace=True)
+
+    proteins_all = pd.read_csv(dataset_path + 'proteins_all.csv')
+    proteins_rest = pd.read_csv(dataset_path + 'proteins_rest.csv')
+    proteins = pd.concat([proteins_all, proteins_rest], axis=0)
+    proteins.drop(proteins.filter(regex="Unname"),axis=1, inplace=True)
+
+    molecules.to_csv(dataset_path + 'molecules.csv')
+    proteins.to_csv(dataset_path + 'proteins.csv')
+    
 def id_pairs_to_smiles_fasta_pairs(id_pairs):
     smiles, fasta = parse_smiles_and_fasta('fd')
     pairs = []
@@ -260,7 +275,7 @@ def make_aau_scores_file(dataset_name, total_number, negative_count):
                 file.write('0\n')
 
 def save_predictions(dataset_name, y_test, predictions):
-    with open(f'./data/{dataset_name}-results.txt', 'w') as file:
+    with open(f'./data/results/{dataset_name}-results.txt', 'w') as file:
         for i in range(len(y_test)):
             file.write(f'{y_test[i]} {predictions[i]}\n')
 

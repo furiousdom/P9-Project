@@ -2,7 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 
-DATASETS_TO_PREPROCESS = ['davis', 'davis2']
+DATASETS_TO_PREPROCESS = ['davis']
 
 def converter(y, convert):
     return -1 * math.log10(y/pow(10, 9)) if convert else y
