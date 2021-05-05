@@ -29,9 +29,9 @@ def run_train_session(model_name, dataset_name, threshold, batch_size):
     X, Y = load_dataset(dataset_name)
     dataset = get_dataset_split(dataset_name, X, Y)
     checkpoint_callback = checkpoint(checkpoint_path('base_' + model_name))
-    base_model.train(dataset, batch_size, 1, [checkpoint_callback])
+    base_model.train(dataset, batch_size, 128, [checkpoint_callback])
     checkpoint_callback = checkpoint(checkpoint_path('dcnn_' + model_name))
-    dcnn_model.train(dataset, batch_size, 1, [checkpoint_callback])
+    dcnn_model.train(dataset, batch_size, 100, [checkpoint_callback])
 
 def run_test_session():
     kiba_X, kiba_Y = load_dataset('kiba')
