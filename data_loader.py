@@ -40,3 +40,15 @@ def load_dataset(dataset_name, binding_affinity_threshold=None):
     X = load_X(dataset_name)
     Y = load_Y(dataset_name, binding_affinity_threshold)
     return X, Y
+
+def load_mols_prots(dataset_name):
+    molecules = pd.read_csv(f'./data/datasets/{dataset_name}/molecules.csv')
+    proteins = pd.read_csv(f'./data/datasets/{dataset_name}/proteins.csv')
+    molecules.drop(molecules.filter(regex="Unname"),axis=1, inplace=True)
+    proteins.drop(proteins.filter(regex="Unname"),axis=1, inplace=True)
+    return np.array(molecules), np.array(proteins)
+
+def load_mols_prots_Y(dataset_name, binding_affinity_threshold=None):
+    mols, prots = load_mols_prots(dataset_name)
+    Y = load_Y(dataset_name, binding_affinity_threshold)
+    return mols, prots, Y
