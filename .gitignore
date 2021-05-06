@@ -22,5 +22,6 @@ graphs/
 *.db
 
 # temp files
-foo.txt
-temp.txt
+dump/
+foo.*
+temp.*
