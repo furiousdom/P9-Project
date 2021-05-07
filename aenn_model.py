@@ -110,10 +110,8 @@ def reshape_network_input(x_input):
     x_input[1] = x_input[1].reshape(x_input[1].shape[0], 100, 1).astype('float32')
     return x_input
 
-def train_molecule_model(x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = dataset['x_train']
-    # x_test = dataset['x_test']
-    model_name = 'molecule_autoencoder'
+def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+    checkpoint_callback = checkpoint(checkpoint_path(model_name))
 
     x_train_reshaped = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
     x_test_reshaped = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
@@ -121,7 +119,7 @@ def train_molecule_model(x_train, x_test, batch_size, epochs, callbacks=None):
     # print(f'x_train shape after reshape: {x_train.shape}')
 
     mol_autoencoder, mol_encoder, mol_decoder = molecule_model(model_name, NUM_FILTERS, FILTER_LENGTH1)
-    mol_autoencoder.fit(x_train_reshaped, x_train, batch_size, epochs)
+    mol_autoencoder.fit(x_train_reshaped, x_train, batch_size, epochs, callbacks=[checkpoint_callback])
 
     encoded_x_test = mol_encoder.predict(x_test_reshaped)
     encoded_x_train = mol_encoder.predict(x_train_reshaped)
@@ -131,10 +129,8 @@ def train_molecule_model(x_train, x_test, batch_size, epochs, callbacks=None):
     print(calc_mean_squared_error(x_test.flatten(), decoded_mols.flatten()))
     return encoded_x_train, encoded_x_test
 
-def train_protein_model(x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = dataset['x_train']
-    # x_test = dataset['x_test']
-    model_name = 'protein_autoencoder'
+def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+    checkpoint_callback = checkpoint(checkpoint_path(model_name))
 
     x_train_reshaped = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
     x_test_reshaped = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
@@ -142,7 +138,7 @@ def train_protein_model(x_train, x_test, batch_size, epochs, callbacks=None):
     # print(f'x_train shape after reshape: {x_train.shape}')
 
     prot_autoencoder, prot_encoder, prot_decoder = protein_model(model_name, NUM_FILTERS, FILTER_LENGTH1)
-    prot_autoencoder.fit(x_train_reshaped, x_train, batch_size, epochs)
+    prot_autoencoder.fit(x_train_reshaped, x_train, batch_size, epochs, callbacks=[checkpoint_callback])
 
     encoded_x_test = prot_encoder.predict(x_test_reshaped)
     encoded_x_train = prot_encoder.predict(x_train_reshaped)
@@ -152,12 +148,12 @@ def train_protein_model(x_train, x_test, batch_size, epochs, callbacks=None):
     print(calc_mean_squared_error(x_test.flatten(), decoded_mols.flatten()))
     return encoded_x_train, encoded_x_test
 
-def train_interaction_model(dataset, batch_size, epochs, callbacks=None):
+def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     #protein latent vector shape: (14000, 30)
-    #molecule latent vector shape: (14000, 50)  
-    model_name = 'interaction_model'
+    #molecule latent vector shape: (14000, 50) 
+    checkpoint_callback = checkpoint(checkpoint_path(model_name))
     model = interaction_model(model_name)
-    model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs)
+    model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=[checkpoint_callback])
     predictions = model.predict(dataset['x_test'])
     print(calc_mean_squared_error(dataset['y_test'], predictions.flatten()))
 
@@ -172,6 +168,16 @@ def get_dataset_split(dataset_name, X, Y):
     }
 
 dataset_name = 'kiba'
+
+def checkpoint_path(model_name, model_version=1): # TODO: Change model_version to be dynamic
+    return f'./data/models/{model_name}/model_{model_version}.ckpt'
+
+def checkpoint(checkpoint_path):
+    return ModelCheckpoint(
+        filepath=checkpoint_path,
+        save_weights_only=True,
+        verbose=1
+    )
 
 def run_train_session_mols():
     molecules = pd.read_csv(f'./data/datasets/{dataset_name}/molecules.csv')
@@ -208,9 +214,9 @@ def run_train_session_ba():
     mol_train, mol_test = train_test_split(mols, train_size=0.8, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.8, random_state=0)
     y_train, y_test = train_test_split(Y, train_size=0.8, random_state=0)
-    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model(model_name, mol_train, mol_test, 256, 1)
-    prot_train_latent_vec, prot_test_latent_vec = train_protein_model(model_name, prot_train, prot_test, 256, 1)
+    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model('molecule_autoencoder', mol_train, mol_test, 256, 100)
+    prot_train_latent_vec, prot_test_latent_vec = train_protein_model('protein_autoencoder', prot_train, prot_test, 256, 100)
     dataset = combined_dataset(mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test)
-    train_interaction_model(dataset, 256, 1)
+    train_interaction_model('interaction_model', dataset, 256, 150)
 
 run_train_session_ba()
