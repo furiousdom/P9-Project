@@ -29,9 +29,9 @@ def molecule_model(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = Dense(50, activation='relu')(encoded)
 
     # Decoder
-    decoded = Dense(100, activation='relu')(encoded)
-    decoded = Dense(200, activation='relu')(decoded)
-    decoded = Dense(300, activation='relu')(decoded)
+    decoded = Dense(300, activation='relu')(encoded)
+    # decoded = Dense(200, activation='relu')(decoded)
+    # decoded = Dense(300, activation='relu')(decoded)
     
     autoencoder = Model(inputs=XDinput, outputs=decoded, name=model_name)
 
@@ -40,9 +40,9 @@ def molecule_model(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Independent Decoder
     # encoded_input = Input(shape=(encoded.shape[1],))
     encoded_input = Input(shape=K.int_shape(encoded)[1:])
-    decoded_output = Dense(100, activation='relu')(encoded_input)
-    decoded_output = Dense(200, activation='relu')(decoded_output)
-    decoded_output = Dense(300, activation='relu')(decoded_output)
+    decoded_output = Dense(300, activation='relu')(encoded_input)
+    # decoded_output = Dense(200, activation='relu')(decoded_output)
+    # decoded_output = Dense(300, activation='relu')(decoded_output)
 
     decoder = Model(encoded_input, decoded_output)
 
@@ -62,9 +62,9 @@ def protein_model(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = Dense(30, activation='relu')(encoded)
 
     # Decoder
-    decoded = Dense(50, activation='relu')(encoded)
-    decoded = Dense(70, activation='relu')(decoded)
-    decoded = Dense(100, activation='relu')(decoded)
+    decoded = Dense(100, activation='relu')(encoded)
+    # decoded = Dense(70, activation='relu')(decoded)
+    # decoded = Dense(100, activation='relu')(decoded)
     
     autoencoder = Model(inputs=XTinput, outputs=decoded, name=model_name)
 
@@ -74,8 +74,8 @@ def protein_model(model_name, NUM_FILTERS, FILTER_LENGTH):
     # encoded_input = Input(shape=(encoded.shape[1],))
     encoded_input = Input(shape=K.int_shape(encoded)[1:])
     decoded_output = Dense(100, activation='relu')(encoded_input)
-    decoded_output = Dense(200, activation='relu')(decoded_output)
-    decoded_output = Dense(300, activation='relu')(decoded_output)
+    # decoded_output = Dense(70, activation='relu')(decoded_output)
+    # decoded_output = Dense(100, activation='relu')(decoded_output)
 
     decoder = Model(encoded_input, decoded_output) 
 
@@ -155,7 +155,7 @@ def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=N
     model = interaction_model(model_name)
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=[checkpoint_callback])
     predictions = model.predict(dataset['x_test'])
-    print(calc_mean_squared_error(dataset['y_test'], predictions.flatten()))
+    print(measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten()))
 
 def get_dataset_split(dataset_name, X, Y):
     x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.8, random_state=0)
@@ -197,12 +197,13 @@ def run_train_session_prots():
     # print(f'y_train shape: {dataset["y_train"].shape}')
     return train_protein_model(dataset, 256, 1)
 
-def combined_dataset(mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test):
+def combined_dataset(dataset_name, mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test):
     x_train = np.concatenate([mol_train_latent_vec, prot_train_latent_vec], axis=1)
     x_test = np.concatenate([mol_test_latent_vec, prot_test_latent_vec], axis=1)
     print(f'x_train.shape: {x_train.shape}')
     print(f'x_test.shape: {x_test.shape}')
     return {
+        'name': dataset_name,
         'x_train': x_train,
         'x_test': x_test,
         'y_train': y_train,
@@ -214,9 +215,34 @@ def run_train_session_ba():
     mol_train, mol_test = train_test_split(mols, train_size=0.8, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.8, random_state=0)
     y_train, y_test = train_test_split(Y, train_size=0.8, random_state=0)
-    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model('molecule_autoencoder', mol_train, mol_test, 256, 100)
-    prot_train_latent_vec, prot_test_latent_vec = train_protein_model('protein_autoencoder', prot_train, prot_test, 256, 100)
-    dataset = combined_dataset(mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test)
-    train_interaction_model('interaction_model', dataset, 256, 150)
+    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model('molecule_autoencoder_2', mol_train, mol_test, 256, 1)
+    prot_train_latent_vec, prot_test_latent_vec = train_protein_model('protein_autoencoder_2', prot_train, prot_test, 256, 1)
+    dataset = combined_dataset(dataset_name, mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test)
+    train_interaction_model('interaction_model_2', dataset, 256, 1)
+
+def run_test_session(i_model_name, m_model_name, p_model_name):
+    mols, prots, Y = load_mols_prots_Y(dataset_name)
+    mol_train, mol_test = train_test_split(mols, train_size=0.8, random_state=0)
+    prot_train, prot_test = train_test_split(prots, train_size=0.8, random_state=0)
+    y_train, y_test = train_test_split(Y, train_size=0.8, random_state=0)
+    mol_test_reshaped = mol_test.reshape(mol_test.shape[0], mol_test.shape[1], 1).astype('float32')
+    prot_test_reshaped = prot_test.reshape(prot_test.shape[0], prot_test.shape[1], 1).astype('float32')
+
+    mol_autoencoder, mol_encoder, mol_decoder = molecule_model(m_model_name, NUM_FILTERS, FILTER_LENGTH1)
+    mol_autoencoder.load_weights(checkpoint_path(m_model_name))
+
+    prot_autoencoder, prot_encoder, prot_decoder = protein_model(p_model_name, NUM_FILTERS, FILTER_LENGTH1)
+    prot_autoencoder.load_weights(checkpoint_path(p_model_name))
+    
+    mol_test_latent_vec = mol_encoder.predict(mol_test_reshaped)
+    prot_test_latent_vec = prot_encoder.predict(prot_test_reshaped)
+
+    x_test = np.concatenate([mol_test_latent_vec, prot_test_latent_vec], axis=1)
+
+    model = interaction_model(i_model_name)
+    model.load_weights(checkpoint_path(i_model_name))
+    predictions = model.predict(x_test)
+    measure_and_print_performance(dataset_name, y_test, predictions.flatten()) 
 
 run_train_session_ba()
+# run_test_session('interaction_model', 'molecule_autoencoder', 'protein_autoencoder')
