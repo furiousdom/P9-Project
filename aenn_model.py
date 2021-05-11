@@ -16,6 +16,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 
 import keras.backend as K
+from keras.layers import UpSampling1D, Flatten, MaxPooling1D, Reshape
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
@@ -23,26 +24,52 @@ def molecule_model(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
     XDinput = Input(shape=(300, 1))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(XDinput)
+    encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encoded)
+    encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encoded)
-    encoded = GlobalMaxPooling1D()(encoded)
-    encoded = Dense(50, activation='relu')(encoded)
+    encoded = MaxPooling1D()(encoded)
 
-    # Decoder
-    decoded = Dense(300, activation='relu')(encoded)
+    # _encoded = Flatten()(encoded)
+    _encoded = Dense(50, activation='relu')(encoded)
+
+    # ANN Decoder
+    # decoded = Dense(300, activation='relu')(encoded)
     # decoded = Dense(200, activation='relu')(decoded)
     # decoded = Dense(300, activation='relu')(decoded)
+
+    # CNN Decoder
+    _decoded = Dense(2976, activation='relu')(_encoded)
+    _decoded = Reshape((31, 96))(_decoded)
+    decoded = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(_decoded)
+    decoded = UpSampling1D()(decoded)
+    decoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(decoded)
+    decoded = UpSampling1D()(decoded)
+    decoded = Conv1D(filters=1, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(decoded)
+    decoded = UpSampling1D(4)(decoded)
+    decoded = Dense(1, activation='relu')(decoded)
     
     autoencoder = Model(inputs=XDinput, outputs=decoded, name=model_name)
 
-    encoder = Model(inputs=XDinput, outputs=encoded)
+    encoder = Model(inputs=XDinput, outputs=_encoded)
 
-    # Independent Decoder
-    # encoded_input = Input(shape=(encoded.shape[1],))
-    encoded_input = Input(shape=K.int_shape(encoded)[1:])
-    decoded_output = Dense(300, activation='relu')(encoded_input)
+    # Independent ANN Decoder
+    # encoded_input = Input(shape=K.int_shape(encoded)[1:])
+    # decoded_output = Dense(300, activation='relu')(encoded_input)
     # decoded_output = Dense(200, activation='relu')(decoded_output)
     # decoded_output = Dense(300, activation='relu')(decoded_output)
+
+    # Independent CNN Decoder
+    encoded_input = Input(shape=K.int_shape(_encoded)[1:])
+    encoded_input = Dense(2976, activation='relu')(encoded_input)
+    encoded_input = Reshape((31, 96))(encoded_input)
+    decoded_output = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(encoded_input)
+    decoded_output = UpSampling1D()(decoded_output)
+    decoded_output = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(decoded_output)
+    decoded_output = UpSampling1D()(decoded_output)
+    decoded_output = Conv1D(filters=1, kernel_size=FILTER_LENGTH,  activation='relu', padding='valid',  strides=1)(decoded_output)
+    decoded_output = UpSampling1D(4)(decoded_output)
+    decoded_output = Dense(1, activation='relu')(decoded_output)
 
     decoder = Model(encoded_input, decoded_output)
 
@@ -110,8 +137,8 @@ def reshape_network_input(x_input):
     x_input[1] = x_input[1].reshape(x_input[1].shape[0], 100, 1).astype('float32')
     return x_input
 
-def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    checkpoint_callback = checkpoint(checkpoint_path(model_name))
+def train_molecule_model(model_name, model_version, x_train, x_test, batch_size, epochs, callbacks=None):
+    checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
 
     x_train_reshaped = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
     x_test_reshaped = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
@@ -119,7 +146,7 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     # print(f'x_train shape after reshape: {x_train.shape}')
 
     mol_autoencoder, mol_encoder, mol_decoder = molecule_model(model_name, NUM_FILTERS, FILTER_LENGTH1)
-    mol_autoencoder.fit(x_train_reshaped, x_train, batch_size, epochs, callbacks=[checkpoint_callback])
+    mol_autoencoder.fit(x_train_reshaped, x_train_reshaped, batch_size, epochs, callbacks=[checkpoint_callback])
 
     encoded_x_test = mol_encoder.predict(x_test_reshaped)
     encoded_x_train = mol_encoder.predict(x_train_reshaped)
@@ -129,8 +156,8 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     print(calc_mean_squared_error(x_test.flatten(), decoded_mols.flatten()))
     return encoded_x_train, encoded_x_test
 
-def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    checkpoint_callback = checkpoint(checkpoint_path(model_name))
+def train_protein_model(model_name, model_version, x_train, x_test, batch_size, epochs, callbacks=None):
+    checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
 
     x_train_reshaped = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
     x_test_reshaped = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
@@ -148,10 +175,10 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
     print(calc_mean_squared_error(x_test.flatten(), decoded_mols.flatten()))
     return encoded_x_train, encoded_x_test
 
-def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
+def train_interaction_model(model_name, model_version, dataset, batch_size, epochs, callbacks=None):
     #protein latent vector shape: (14000, 30)
     #molecule latent vector shape: (14000, 50) 
-    checkpoint_callback = checkpoint(checkpoint_path(model_name))
+    checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
     model = interaction_model(model_name)
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=[checkpoint_callback])
     predictions = model.predict(dataset['x_test'])
@@ -215,10 +242,10 @@ def run_train_session_ba():
     mol_train, mol_test = train_test_split(mols, train_size=0.8, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.8, random_state=0)
     y_train, y_test = train_test_split(Y, train_size=0.8, random_state=0)
-    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model('molecule_autoencoder_2', mol_train, mol_test, 256, 1)
-    prot_train_latent_vec, prot_test_latent_vec = train_protein_model('protein_autoencoder_2', prot_train, prot_test, 256, 1)
+    mol_train_latent_vec, mol_test_latent_vec = train_molecule_model('molecule_autoencoder_2', 2, mol_train, mol_test, 256, 1)
+    prot_train_latent_vec, prot_test_latent_vec = train_protein_model('protein_autoencoder_2', 2, prot_train, prot_test, 256, 1)
     dataset = combined_dataset(dataset_name, mol_train_latent_vec, mol_test_latent_vec, prot_train_latent_vec, prot_test_latent_vec, y_train, y_test)
-    train_interaction_model('interaction_model_2', dataset, 256, 1)
+    train_interaction_model('interaction_model_2', 2, dataset, 256, 1)
 
 def run_test_session(i_model_name, m_model_name, p_model_name):
     mols, prots, Y = load_mols_prots_Y(dataset_name)
@@ -245,4 +272,4 @@ def run_test_session(i_model_name, m_model_name, p_model_name):
     measure_and_print_performance(dataset_name, y_test, predictions.flatten()) 
 
 run_train_session_ba()
-# run_test_session('interaction_model', 'molecule_autoencoder', 'protein_autoencoder')
+# run_test_session('interaction_model_2', 'molecule_autoencoder_2', 'protein_autoencoder_2')
