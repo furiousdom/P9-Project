@@ -12,6 +12,7 @@ build/
 
 # Storage
 data/
+graphs/
 
 # local env files
 .env.local
@@ -19,3 +20,8 @@ data/
 
 *.sqlite3
 *.db
+
+# temp files
+dump/
+foo.*
+temp.*
