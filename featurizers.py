@@ -1,10 +1,9 @@
 import protvec
-import data_handler
 import numpy as np
 import deepchem as dc
-from data_handler import load_json_obj_from_file
-from data_handler import save_items_to_txt_by_line
-from data_handler import save_molecule_embeddings_to_csv
+from utils import load_json_obj_from_file
+from utils import save_items_to_txt_by_line
+from utils import save_molecule_embeddings_to_csv
 
 start = 30056
 limit = 70000
@@ -28,7 +27,7 @@ def featurize_kiba():
             kiba_no_features.append(i)
 
     molecules = np.delete(molecules, kiba_no_features, 0)
-    data_handler.save_molecule_embeddings_to_csv('./data/kiba_molecules_rest2.csv', molecules)
+    save_molecule_embeddings_to_csv('./data/kiba_molecules_rest2.csv', molecules)
     del molecules
 
     with open ('./data/kiba_proteins_rest2.csv', "a") as kiba_protein_file:

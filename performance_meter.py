@@ -1,13 +1,9 @@
-import math
 import emetrics
 import numpy as np
-from sklearn.metrics import auc
+from utils import save_predictions
 from data_loader import binarize_score
-from data_handler import save_predictions
 from data_loader import DATASETS_TO_PREPROCESS
 from sklearn.metrics import mean_squared_error as sk_mse
-from sklearn.metrics import average_precision_score as sk_ap
-# from lifelines.utils import concordance_index
 
 def calc_accuracy(y_test, predictions):
     counter = 0
@@ -41,9 +37,7 @@ def measure_and_print_performance(dataset_name, y_test, predictions):
     ci_em = emetrics.get_cindex(y_test, predictions)
     r2m_em = emetrics.get_rm2(y_test, predictions)
     aupr_em = emetrics.get_aupr(binary_y_test, binary_predictions)
-
     mse_sk = sk_mse(y_test, predictions)
-    # avg_precision = sk_ap(y_test, predictions)
 
     save_predictions(dataset_name, y_test, predictions)
 
@@ -52,4 +46,3 @@ def measure_and_print_performance(dataset_name, y_test, predictions):
     print(f'\tMean Squared Error: {mse_sk}')
     print(f'\tr2m: {r2m_em}')
     print(f'\tAUPR: {aupr_em}')
-    # print(f'\tAverage Precision: {avg_precision}')

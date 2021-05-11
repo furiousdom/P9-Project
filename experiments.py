@@ -5,7 +5,7 @@ from data_loader import load_dataset
 from keras.callbacks import ModelCheckpoint
 from sklearn.model_selection import train_test_split
 
-def checkpoint_path(model_name, model_version=1): # TODO: Change model_version to be dynamic
+def checkpoint_path(model_name, model_version=1):
     return f'./data/models/{model_name}/model_{model_version}.ckpt'
 
 def checkpoint(checkpoint_path):

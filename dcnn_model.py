@@ -11,14 +11,14 @@ def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     XDinput = Input(shape=(300, 1))
     XTinput = Input(shape=(100, 1))
 
-    encode_smiles = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(XDinput)
-    encode_smiles = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encode_smiles)
-    encode_smiles = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH1,  activation='relu', padding='valid',  strides=1, input_shape=(300, ))(encode_smiles)
+    encode_smiles = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH1, activation='relu', input_shape=(300, ))(XDinput)
+    encode_smiles = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH1, activation='relu')(encode_smiles)
+    encode_smiles = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH1, activation='relu')(encode_smiles)
     encode_smiles = GlobalMaxPooling1D()(encode_smiles) #pool_size=pool_length[i]
 
-    encode_protein = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH2,  activation='relu', padding='valid',  strides=1, input_shape=(100, ))(XTinput)
-    encode_protein = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH2,  activation='relu', padding='valid',  strides=1, input_shape=(100, ))(encode_protein)
-    encode_protein = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH2,  activation='relu', padding='valid',  strides=1, input_shape=(100, ))(encode_protein)
+    encode_protein = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH2, activation='relu', input_shape=(100, ))(XTinput)
+    encode_protein = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH2, activation='relu')(encode_protein)
+    encode_protein = Conv1D(filters=NUM_FILTERS*3, kernel_size=FILTER_LENGTH2, activation='relu')(encode_protein)
     encode_protein = GlobalMaxPooling1D()(encode_protein)
 
     encode_interaction = keras.layers.concatenate([encode_smiles, encode_protein])

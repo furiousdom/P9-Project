@@ -65,3 +65,5 @@ Remove from Both FEATURIZED MOLECULES and LOOKED UP PROTEINS -> Size Z for both 
 Featurize Z proteins
 
 Important. Remove from end to beginning.
+
+TODO: Revise app.py, experiments.py so that they don't use aau40000 dataset
