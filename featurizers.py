@@ -12,9 +12,9 @@ def molecule_protein_positions(dataset_name):
     return (1, 0) if dataset_name == 'kiba' else (0, 1)
 
 def save_molecule_feature_vectors(dataset_name, molecules, problematic_indicies):
-    mol_embed_file_name = './data/datasets' + dataset_name + '/rest_molecules.csv'
+    mol_embed_file_name = './data/datasets/' + dataset_name + '/rest_molecules.csv'
     save_molecule_embeddings_to_csv(mol_embed_file_name, molecules)
-    indicies_file_name = './data/datasets' + dataset_name + '/rest_molecule_problematic_indicies.txt'
+    indicies_file_name = './data/datasets/' + dataset_name + '/rest_molecule_problematic_indicies.txt'
     save_items_to_txt_by_line(indicies_file_name, problematic_indicies)
 
 def featurize_molecules(dataset_name, json_dataset, molecule_idx):
@@ -32,13 +32,13 @@ def featurize_molecules(dataset_name, json_dataset, molecule_idx):
     return problematic_indicies
 
 def featurize_proteins(dataset_name, json_dataset, protein_idx, mol_problematic_indxs):
-    with open ('./data/datasets' + dataset_name + '/rest_proteins.csv', "a") as protein_file:
+    with open ('./data/datasets/' + dataset_name + '/rest_proteins.csv', "a") as protein_file:
         for i, pair in enumerate(json_dataset):
             if i not in mol_problematic_indxs:
                 protvec.sequences2protvecsCSV(protein_file, [pair[protein_idx]])
 
 def save_binding_affinities(dataset_name, json_dataset, problematic_indicies):
-    scores_file_path = './data/datasets' + dataset_name + '/rest_binding_affinities.txt'
+    scores_file_path = './data/datasets/' + dataset_name + '/rest_binding_affinities.txt'
     with open(scores_file_path, 'w') as scores_file:
         for i in range(0, limit - start):
             if i + start not in problematic_indicies:
@@ -51,3 +51,5 @@ def featurize_dataset(dataset_name):
     mol_problematic_indxs = featurize_molecules(dataset_name, json_dataset, molecule_idx)
     featurize_proteins(dataset_name, json_dataset, protein_idx, mol_problematic_indxs)
     save_binding_affinities(dataset_name, json_dataset, mol_problematic_indxs)
+
+featurize_dataset('kiba')
