@@ -1,12 +1,12 @@
-import protvec
 import numpy as np
 import deepchem as dc
+import libs.protvec as protvec
 from utils import load_json_obj_from_file
 from utils import save_items_to_txt_by_line
 from utils import save_molecule_embeddings_to_csv
 
-start = 30056
-limit = 70000
+start = 100000 # 70000
+limit = 118254 # 100000
 
 def molecule_protein_positions(dataset_name):
     return (1, 0) if dataset_name == 'kiba' else (0, 1)
@@ -46,7 +46,7 @@ def save_binding_affinities(dataset_name, json_dataset, problematic_indicies):
 
 def featurize_dataset(dataset_name):
     dataset_path = './data/' + dataset_name + '.json'
-    json_dataset = load_json_obj_from_file(dataset_path)[start:limit]
+    json_dataset = load_json_obj_from_file(dataset_path)[start:]
     molecule_idx, protein_idx = molecule_protein_positions(dataset_name)
     mol_problematic_indxs = featurize_molecules(dataset_name, json_dataset, molecule_idx)
     featurize_proteins(dataset_name, json_dataset, protein_idx, mol_problematic_indxs)
