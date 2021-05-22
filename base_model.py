@@ -1,18 +1,18 @@
-import tensorflow as tf
-from tensorflow.keras import layers
-from performance_meter import  measure_and_print_performance
+from keras.models import Sequential
+from keras.layers import Input, Dense
+from performance_meter import measure_and_print_performance
 
 def get_model():
-    model = tf.keras.models.Sequential()
+    model = Sequential()
 
-    model.add(layers.Input(shape=(400,)))
-    model.add(layers.Dense(700, activation='relu'))
-    model.add(layers.Dense(500, activation='sigmoid'))
-    model.add(layers.Dense(300, activation='relu'))
-    model.add(layers.Dense(100, activation='sigmoid'))
-    model.add(layers.Dense(50, activation='relu'))
-    model.add(layers.Dense(25, activation='relu'))
-    model.add(layers.Dense(1, activation='relu'))
+    model.add(Input(shape=(400, )))
+    model.add(Dense(700, activation='relu'))
+    model.add(Dense(500, activation='sigmoid'))
+    model.add(Dense(300, activation='relu'))
+    model.add(Dense(100, activation='sigmoid'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(25, activation='relu'))
+    model.add(Dense(1, activation='relu'))
 
     metrics=['accuracy', 'mean_squared_error']
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
