@@ -5,7 +5,7 @@ from utils import load_json_obj_from_file
 from utils import save_items_to_txt_by_line
 from utils import save_molecule_embeddings_to_csv
 
-start = 100000
+start = 70000
 limit = 118254
 
 def molecule_protein_positions(dataset_name):

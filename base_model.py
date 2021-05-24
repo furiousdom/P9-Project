@@ -2,8 +2,8 @@ from keras.models import Sequential
 from keras.layers import Input, Dense, Dropout
 from performance_meter import measure_and_print_performance
 
-def get_model():
-    model = Sequential()
+def get_model(model_name):
+    model = Sequential(name=model_name)
 
     model.add(Input(shape=(400, )))
     model.add(Dense(700, activation='relu'))
@@ -26,15 +26,15 @@ def get_model():
     print(model.summary())
     return model
 
-def train(dataset, batch_size, epochs, callbacks=None):
-    model = get_model()
+def train(model_name, dataset, batch_size, epochs, callbacks=None):
+    model = get_model(model_name)
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(dataset['x_test'])
-    measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
+    measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten())
 
-def test(datasets, checkpoint_path):
-    model = get_model()
+def test(model_name, datasets, checkpoint_path):
+    model = get_model(model_name)
     model.load_weights(checkpoint_path)
     for dataset in datasets:
         predictions = model.predict(dataset['x_test'])
-        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
+        measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten())

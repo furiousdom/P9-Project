@@ -161,4 +161,4 @@ def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=N
     model = interaction_model(model_name)
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(dataset['x_test'])
-    print(measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten()))
+    print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

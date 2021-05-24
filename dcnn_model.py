@@ -7,7 +7,7 @@ from performance_meter import  measure_and_print_performance
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
-def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
+def get_model(model_name, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
     drug = Input(shape=(300, 1))
     target = Input(shape=(100, 1))
 
@@ -32,9 +32,9 @@ def get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2):
 
     predictions = Dense(1, activation='relu')(FC2)
 
-    model = Model(inputs=[drug, target], outputs=[predictions])
+    model = Model(inputs=[drug, target], outputs=[predictions], name=model_name)
     metrics=['accuracy', 'mean_squared_error']
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    model.compile( optimizer='adam', loss='mean_squared_error', metrics=metrics)
 
     # plot_model(model, to_file='data/figures/model.png')
     print(model.summary())
@@ -46,18 +46,18 @@ def reshape_network_input(x_input):
     x_input[1] = x_input[1].reshape(x_input[1].shape[0], 100, 1).astype('float32')
     return x_input
 
-def train(dataset, batch_size, epochs, callbacks=None):
+def train(model_name, dataset, batch_size, epochs, callbacks=None):
     x_train = reshape_network_input(dataset['x_train'])
     x_test = reshape_network_input(dataset['x_test'])
-    model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
+    model = get_model(model_name, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
     model.fit(x_train, dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(x_test)
-    measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
+    measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten())
 
-def test(datasets, checkpoint_path):
-    model = get_model(NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
+def test(model_name, datasets, checkpoint_path):
+    model = get_model(model_name, NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2)
     model.load_weights(checkpoint_path)
     for dataset in datasets:
         x_test = reshape_network_input(dataset['x_test'])
         predictions = model.predict(x_test)
-        measure_and_print_performance(dataset['name'], dataset['y_test'], predictions.flatten())
+        measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten())

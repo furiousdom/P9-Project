@@ -55,9 +55,9 @@ def run_network_train_session(model_name, model_version, dataset_name, threshold
     dataset = get_dataset_split(dataset_name, X, Y)
     checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
     if model_name == 'base_model':
-        base_model.train(dataset, batch_size, epochs, [checkpoint_callback])
+        base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])
     elif model_name == 'dcnn_model':
-        dcnn_model.train(dataset, batch_size, epochs, [checkpoint_callback])
+        dcnn_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])
 
 def run_network_test_session(model_name, model_version):
     pass

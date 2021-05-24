@@ -113,8 +113,17 @@ def make_aau_scores_file(dataset_name, total_number, negative_count):
             if i < total_number - negative_count: file.write('1\n')
             else: file.write('0\n')
 
-def save_predictions(dataset_name, y_test, predictions):
-    with open(f'./data/results/{dataset_name}-results.txt', 'w') as file:
+def save_predictions(model_name, dataset_name, y_test, predictions):
+    file_name = f'./data/results/{model_name}-{dataset_name}-interactions.txt'
+    with open(file_name, 'w') as file:
         for i in range(len(y_test)):
             file.write(f'{y_test[i]} {predictions[i]}\n')
 
+def save_metrics(model_name, dataset_name, metrics):
+    file_name = f'./data/results/{model_name}-{dataset_name}-results.txt'
+    with open(file_name, 'w') as file:
+        file.write(f'{model_name} ({dataset_name} dataset):\n')
+        file.write(f'\tConcordance Index: {metrics["ci"]}\n')
+        file.write(f'\tMean Squared Error: {metrics["mse"]}\n')
+        file.write(f'\tr2m: {metrics["r2m"]}\n')
+        file.write(f'\tAUPR: {metrics["aupr"]}\n')
