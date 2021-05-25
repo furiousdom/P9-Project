@@ -6,16 +6,16 @@ from performance_meter import measure_and_print_performance
 def molecule_model_RNN_RNN(model_name):
     # Encoder
     encoder_input = Input(shape=(300, 1))
-    encoded = LSTM(64, activation='relu', return_sequences=True)(encoder_input)
-    encoded = LSTM(32, activation='relu')(encoded)
+    encoded = LSTM(64, return_sequences=True)(encoder_input)
+    encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(50, activation='relu')(encoded)
 
     # Decoder
     decoded = Reshape((50, 1))(encoded)
     decoded = Dense(128, activation='sigmoid')(decoded)
-    decoded = LSTM(32, activation='relu', return_sequences=True)(decoded)
-    decoded = LSTM(64, activation='relu')(decoded)
+    decoded = LSTM(32, return_sequences=True)(decoded)
+    decoded = LSTM(64)(decoded)
     decoded = Dense(300, activation='relu')(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
@@ -31,8 +31,8 @@ def molecule_model_RNN_RNN(model_name):
 def molecule_model_RNN_DNN(model_name):
     # Encoder
     encoder_input = Input(shape=(300, 1))
-    encoded = LSTM(64, activation='relu', return_sequences=True)(encoder_input)
-    encoded = LSTM(32, activation='relu')(encoded)
+    encoded = LSTM(64, return_sequences=True)(encoder_input)
+    encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(50, activation='relu')(encoded)
 
@@ -54,8 +54,8 @@ def molecule_model_RNN_DNN(model_name):
 def protein_model_RNN_RNN(model_name):
     # Encoder
     encoder_input = Input(shape=(100, 1))
-    encoded = LSTM(64, activation='relu', return_sequences=True)(encoder_input)
-    encoded = LSTM(32, activation='relu')(encoded)
+    encoded = LSTM(64, return_sequences=True)(encoder_input)
+    encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(30, activation='relu')(encoded)
 
@@ -79,8 +79,8 @@ def protein_model_RNN_RNN(model_name):
 def protein_model_RNN_DNN(model_name):
     # Encoder
     encoder_input = Input(shape=(100, 1))
-    encoded = LSTM(64, activation='relu', return_sequences=True)(encoder_input)
-    encoded = LSTM(32, activation='relu')(encoded)
+    encoded = LSTM(64, return_sequences=True)(encoder_input)
+    encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(30, activation='relu')(encoded)
 
