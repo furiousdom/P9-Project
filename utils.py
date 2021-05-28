@@ -53,6 +53,10 @@ def save_molecule_embeddings_to_csv(file_name, molecule_embeddings):
     molecules_data_frame = pd.DataFrame(molecule_embeddings)
     molecules_data_frame.to_csv(file_name)
 
+def save_embeddings_to_csv(file_name, embeddings):
+    data_frame = pd.DataFrame(embeddings)
+    data_frame.to_csv(file_name)
+
 def concatenate_dataset(dataset_name):
     dataset_path = f'./data/datasets/{dataset_name}/'
     molecules_all = pd.read_csv(dataset_path + 'molecules_all.csv')
