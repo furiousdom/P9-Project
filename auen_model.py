@@ -170,7 +170,7 @@ def interaction_model(model_name):
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
     # x_train_reshaped = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
     # x_test_reshaped = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
-    print(x_train.shape)
+
     mol_autoencoder, mol_encoder = None, None
     if model_name == 'auen_molecule_CNN_CNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
@@ -180,7 +180,7 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
         mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
     encoded_x_test = mol_encoder.predict(x_test)
-    encoded_x_train = mol_encoder.predict(x_test)
+    encoded_x_train = mol_encoder.predict(x_train)
 
     return encoded_x_train, encoded_x_test
 
@@ -197,12 +197,20 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
         prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
     encoded_x_test = prot_encoder.predict(x_test)
-    encoded_x_train = prot_encoder.predict(x_test)
+    encoded_x_train = prot_encoder.predict(x_train)
 
     return encoded_x_train, encoded_x_test
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)
+    # print(f'x_train shape: {dataset["x_train"].shape}')
+    # print(f'x_train shape: {dataset["y_train"].shape}')
+    # x_train = np.array(dataset["x_train"])
+    # y_train = np.array(dataset["y_train"])
+    # x_test = np.array(dataset["x_test"])
+    # y_test = np.array(dataset["y_test"])
+    # print(f'x_train shape: {x_train.shape}')
+    # print(f'y_train shape: {y_train.shape}')
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(dataset['x_test'])
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

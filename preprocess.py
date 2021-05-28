@@ -48,22 +48,22 @@ def one_hot_smiles(smiles_string, MAX_SMI_LEN, dictionary):
 	for i, ch in enumerate(smiles_string[:MAX_SMI_LEN]):
 		X[i, (dictionary[ch]-1)] = 1
 
-	return X #.tolist()
+	return X.tolist()
 
 def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros((MAX_SEQ_LEN, len(dictionary)))
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i, (dictionary[ch])-1] = 1
 
-	return X #.tolist()
+	return X.tolist()
 
 
 def label_smiles(line, MAX_SMI_LEN, dictionary):
 	X = np.zeros(MAX_SMI_LEN)
-	for i, ch in enumerate(line[:MAX_SMI_LEN]): #	x, dictionary, y
+	for i, ch in enumerate(line[:MAX_SMI_LEN]):
 		X[i] = dictionary[ch]
 
-	return X #.tolist()
+	return X.tolist()
 
 def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros(MAX_SEQ_LEN)
@@ -71,7 +71,7 @@ def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i] = dictionary[ch]
 
-	return X #.tolist()
+	return X.tolist()
 
 DATASETS_TO_PREPROCESS = ['davis']
 
@@ -115,7 +115,7 @@ class DataSet(object):
         Y = np.load(self.dataset_folder_path + 'binding_affinities.npy')
         if self.dataset_name in DATASETS_TO_PREPROCESS:
             Y = process_Y(Y)
-        return molecules, proteins, Y
+        return np.array(molecules), np.array(proteins), np.array(Y)
 
     def parse_data(self, with_label=False):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
@@ -138,11 +138,11 @@ class DataSet(object):
 
         return embedded_molecules, embedded_proteins, Y
 
-
-dataset_name = 'davis'
+from utils import save_json_obj_to_file
+dataset_name = 'kiba'
 datasets_folder_path = f'./data/datasets/{dataset_name}/'
 
-# dataset = DataSet(dataset_name).parse_data()
-# np.save(datasets_folder_path + 'molecules.npy', dataset[0])
-# np.save(datasets_folder_path + 'proteins.npy', dataset[1])
-# np.save(datasets_folder_path + 'binding_affinities.npy', dataset[2])
+dataset = DataSet(dataset_name).parse_data()
+save_json_obj_to_file(datasets_folder_path + 'molecules.json', dataset[0])
+save_json_obj_to_file(datasets_folder_path + 'proteins.json', dataset[1])
+save_json_obj_to_file(datasets_folder_path + 'binding_affinities.json', dataset[2])

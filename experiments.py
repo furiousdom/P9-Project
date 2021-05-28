@@ -52,10 +52,14 @@ def get_dataset_split(dataset_name, molecules, proteins, Y):
     }
 
 def combine_latent_vecs(dataset_name, mol_train_latent_vecs, mol_test_latent_vecs, prot_train_latent_vecs, prot_test_latent_vecs, y_train, y_test):
+    # print(f'mol_train_latent_vecs shape: {mol_test_latent_vecs.shape}')
+    # print(f'y_train shape: {y_train.shape}')
+    # print(f'y_0: {y_train[0]}')
+    # print(f'y_1: {y_train[1]}')
     x_train = np.concatenate([mol_train_latent_vecs, prot_train_latent_vecs], axis=1)
     x_test = np.concatenate([mol_test_latent_vecs, prot_test_latent_vecs], axis=1)
-    print(f'x_train.shape: {x_train.shape}')
-    print(f'x_test.shape: {x_test.shape}')
+    # print(f'x_train.shape: {x_train.shape}')
+    # print(f'x_test.shape: {x_test.shape}')
     return {
         'name': dataset_name,
         'x_train': x_train,
@@ -85,6 +89,8 @@ def run_autoencoder_train_session(model_names, version_of_models, dataset_name, 
         raise Error('Version of models not compatible with dataset.')
     # mols, prots, Y = load_mols_prots_Y(dataset_name)
     mols, prots, Y = DataSet(dataset_name).load_embedded_dataset()
+    mols, prots, Y = np.array(mols), np.array(prots), np.array(Y)
+    # print(f'{mols.shape} {prots.shape} {Y.shape}')
     mol_train, mol_test = train_test_split(mols, train_size=0.84, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.84, random_state=0)
     y_train, y_test = train_test_split(Y, train_size=0.84, random_state=0)
