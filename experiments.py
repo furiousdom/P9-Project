@@ -88,12 +88,14 @@ def run_autoencoder_train_session(model_names, version_of_models, dataset_name, 
     if not compatible_dataset(version_of_models, dataset_name):
         raise Error('Version of models not compatible with dataset.')
     # mols, prots, Y = load_mols_prots_Y(dataset_name)
-    mols, prots, Y = DataSet(dataset_name).load_embedded_dataset()
-    mols, prots, Y = np.array(mols), np.array(prots), np.array(Y)
+    mols, prots, Y = DataSet(dataset_name).parse_data()
+    mols, prots, Y = np.asarray(mols), np.asarray(prots), np.asarray(Y)
     # print(f'{mols.shape} {prots.shape} {Y.shape}')
+    print('Loaded dataset')
     mol_train, mol_test = train_test_split(mols, train_size=0.84, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.84, random_state=0)
     y_train, y_test = train_test_split(Y, train_size=0.84, random_state=0)
+    print('Ran trained test split')
     if model_names[0] == 'auen':
         checkpoint_callback = checkpoint(checkpoint_path(model_names[1], version_of_models))
         mol_train_latent_vec, mol_test_latent_vec = auen_model.train_molecule_model(model_names[1], mol_train, mol_test, batch_size, epochs, [checkpoint_callback])

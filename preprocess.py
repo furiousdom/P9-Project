@@ -48,14 +48,14 @@ def one_hot_smiles(smiles_string, MAX_SMI_LEN, dictionary):
 	for i, ch in enumerate(smiles_string[:MAX_SMI_LEN]):
 		X[i, (dictionary[ch]-1)] = 1
 
-	return X.tolist()
+	return X # .tolist()
 
 def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros((MAX_SEQ_LEN, len(dictionary)))
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i, (dictionary[ch])-1] = 1
 
-	return X.tolist()
+	return X # .tolist()
 
 
 def label_smiles(line, MAX_SMI_LEN, dictionary):
@@ -63,7 +63,7 @@ def label_smiles(line, MAX_SMI_LEN, dictionary):
 	for i, ch in enumerate(line[:MAX_SMI_LEN]):
 		X[i] = dictionary[ch]
 
-	return X.tolist()
+	return X # .tolist()
 
 def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros(MAX_SEQ_LEN)
@@ -71,7 +71,7 @@ def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i] = dictionary[ch]
 
-	return X.tolist()
+	return X # .tolist()
 
 DATASETS_TO_PREPROCESS = ['davis']
 
@@ -110,12 +110,12 @@ class DataSet(object):
 
     # TODO: Redo this function
     def load_embedded_dataset(self):
-        molecules = np.load(self.dataset_folder_path + 'molecules.npy')
-        proteins = np.load(self.dataset_folder_path + 'proteins.npy')
-        Y = np.load(self.dataset_folder_path + 'binding_affinities.npy')
+        molecules = load_json_obj_from_file(self.dataset_folder_path + 'molecules.json') #Changed to json fom npy
+        proteins = load_json_obj_from_file(self.dataset_folder_path + 'proteins.json')
+        Y = load_json_obj_from_file(self.dataset_folder_path + 'binding_affinities.json')
         if self.dataset_name in DATASETS_TO_PREPROCESS:
             Y = process_Y(Y)
-        return np.array(molecules), np.array(proteins), np.array(Y)
+        return np.asarray(molecules), np.asarray(proteins), np.asarray(Y)
 
     def parse_data(self, with_label=False):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
