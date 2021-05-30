@@ -1,6 +1,9 @@
 import math
 import numpy as np
+import json
+import pickle
 from utils import load_json_obj_from_file
+from collections import OrderedDict
 
 FASTA_DICTIONARY = {
     "A": 1, "C": 2, "B": 3, "E": 4, "D": 5, "G": 6,
@@ -42,8 +45,20 @@ ISOMETRIC_SMILES_DICTIONARY = {
 
 ISOMETRIC_SMILES_DICTIONARY_LENGTH = len(ISOMETRIC_SMILES_DICTIONARY) # 64
 
+def tokenize_smiles(smiles):
+    res = []
+    for char in smiles:
+        res.append(ISOMETRIC_SMILES_DICTIONARY(char))
+    return res
+
+def tokenize_sequence(sequence):
+    res = []
+    for char in sequence:
+        res.append(FASTA_DICTIONARY(char))
+    return res
+
 def one_hot_smiles(smiles_string, MAX_SMI_LEN, dictionary):
-	X = np.zeros((MAX_SMI_LEN, len(dictionary)))
+	X = np.zeros((MAX_SMI_LEN, len(dictionary)), np.uint8)
 
 	for i, ch in enumerate(smiles_string[:MAX_SMI_LEN]):
 		X[i, (dictionary[ch]-1)] = 1
@@ -51,7 +66,7 @@ def one_hot_smiles(smiles_string, MAX_SMI_LEN, dictionary):
 	return X # .tolist()
 
 def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
-	X = np.zeros((MAX_SEQ_LEN, len(dictionary)))
+	X = np.zeros((MAX_SEQ_LEN, len(dictionary)), np.uint8)
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i, (dictionary[ch])-1] = 1
 
@@ -98,7 +113,7 @@ class DataSet(object):
     def __init__(self, dataset_name):
         self.dataset_name = dataset_name
         self.json_dataset_path = f'./data/{dataset_name}.json'
-        self.dataset_folder_path =  f'./data/datasets/{dataset_name}/'
+        self.dataset_folder_path =  f'./data/{dataset_name}/'
         self.MAX_SMI_LEN = 100 # self.SEQLEN = seqlen
         self.MAX_SEQ_LEN = 1000 # self.SMILEN = smilen
 
@@ -136,13 +151,48 @@ class DataSet(object):
                 embedded_proteins.append(one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
                 Y.append(pair[2])
 
+        print(f'molarraytype: {embedded_molecules[0].dtype}')
+        print(f'protarraytype: {embedded_proteins[0].dtype}')
+
+        # print(f'mol[0]: {embedded_molecules[0]}')
+        # print(f'prot[0]: {embedded_proteins[0]}')
+        # print(f'y[0]: {Y[0]}')
         return embedded_molecules, embedded_proteins, Y
 
-from utils import save_json_obj_to_file
-dataset_name = 'kiba'
-datasets_folder_path = f'./data/datasets/{dataset_name}/'
+    # def parse_data(self, with_label=True): 
+    #     fpath = self.dataset_folder_path	
+    #     print("Read %s start" % fpath)
 
-dataset = DataSet(dataset_name).parse_data()
-save_json_obj_to_file(datasets_folder_path + 'molecules.json', dataset[0])
-save_json_obj_to_file(datasets_folder_path + 'proteins.json', dataset[1])
-save_json_obj_to_file(datasets_folder_path + 'binding_affinities.json', dataset[2])
+    #     ligands = json.load(open(fpath+"ligands_can.txt"), object_pairs_hook=OrderedDict)
+    #     proteins = json.load(open(fpath+"proteins.txt"), object_pairs_hook=OrderedDict)
+
+    #     Y = pickle.load(open(fpath + "Y","rb"), encoding='latin1') ### TODO: read from raw
+    #     if self.dataset_name in DATASETS_TO_PREPROCESS:
+    #         Y = -(np.log10(Y/(math.pow(10,9))))
+
+    #     XD = []
+    #     XT = []
+
+    #     if with_label:
+    #         for d in ligands.keys():
+    #             XD.append(label_smiles(ligands[d], self.MAX_SMI_LEN, self.smiles_dictionary))
+
+    #         for t in proteins.keys():
+    #             XT.append(label_sequence(proteins[t], self.MAX_SEQ_LEN, self.fasta_dictionary))
+    #     else:
+    #         for d in ligands.keys():
+    #             XD.append(one_hot_smiles(ligands[d], self.MAX_SMI_LEN, self.smiles_dictionary))
+
+    #         for t in proteins.keys():
+    #             XT.append(one_hot_sequence(proteins[t], self.MAX_SEQ_LEN, self.fasta_dictionary))
+    
+    #     return XD, XT, Y
+
+# from utils import save_json_obj_to_file
+# dataset_name = 'kiba'
+# datasets_folder_path = f'./data/datasets/{dataset_name}/'
+
+# dataset = DataSet(dataset_name).parse_data()
+# save_json_obj_to_file(datasets_folder_path + 'molecules.json', dataset[0])
+# save_json_obj_to_file(datasets_folder_path + 'proteins.json', dataset[1])
+# save_json_obj_to_file(datasets_folder_path + 'binding_affinities.json', dataset[2])

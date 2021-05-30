@@ -90,7 +90,7 @@ def run_autoencoder_train_session(model_names, version_of_models, dataset_name, 
     # mols, prots, Y = load_mols_prots_Y(dataset_name)
     mols, prots, Y = DataSet(dataset_name).parse_data()
     mols, prots, Y = np.asarray(mols), np.asarray(prots), np.asarray(Y)
-    # print(f'{mols.shape} {prots.shape} {Y.shape}')
+    print(f'mols.shape: {mols.shape} prots.shape: {prots.shape} Y.shape: {Y.shape}')
     print('Loaded dataset')
     mol_train, mol_test = train_test_split(mols, train_size=0.84, random_state=0)
     prot_train, prot_test = train_test_split(prots, train_size=0.84, random_state=0)
