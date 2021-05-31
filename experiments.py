@@ -73,8 +73,11 @@ def run_network_train_session(model_name, model_version, dataset_name, threshold
         raise Error('Version of models not compatible with dataset.')
     # X, Y = load_dataset(dataset_name, threshold)
     # dataset = get_dataset_split(dataset_name, X, Y)
-    mols, prots, Y = DataSet.load_embedded_dataset(dataset_name)
+    mols, prots, Y = DataSet(dataset_name).parse_data()
+    mols, prots, Y = np.asarray(mols), np.asarray(prots), np.asarray(Y)
     dataset = get_dataset_split(dataset_name, mols, prots, Y)
+    print(f'mols.shape: {mols.shape} prots.shape: {prots.shape} Y.shape: {Y.shape}')
+    print('Loaded dataset')
     checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
     if model_name == 'base_model':
         base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])
