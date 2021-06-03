@@ -5,8 +5,8 @@ from performance_meter import measure_and_print_performance
 
 def molecule_model_RNN_RNN(model_name):
     # Encoder
-    # encoder_input = Input(shape=(100, 1))
-    encoder_input = Input(shape=(100, 64))
+    encoder_input = Input(shape=(100, 1))
+    # encoder_input = Input(shape=(100, 64))
     encoded = LSTM(64, return_sequences=True)(encoder_input)
     encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
@@ -17,11 +17,11 @@ def molecule_model_RNN_RNN(model_name):
     decoded = Dense(128, activation='sigmoid')(decoded)
     decoded = LSTM(32, return_sequences=True)(decoded)
     decoded = LSTM(64)(decoded)
-    # decoded = Dense(100, activation='relu')(decoded)
-    # decoded = Reshape((100, 1))(decoded)
-    decoded = Dense(3200, activation='relu')(decoded)
-    decoded = Dense(6400, activation='relu')(decoded)
-    decoded = Reshape((100, 64))(decoded)
+    decoded = Dense(100, activation='relu')(decoded)
+    decoded = Reshape((100, 1))(decoded)
+    # decoded = Dense(3200, activation='relu')(decoded)
+    # decoded = Dense(6400, activation='relu')(decoded)
+    # decoded = Reshape((100, 64))(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
@@ -35,22 +35,22 @@ def molecule_model_RNN_RNN(model_name):
 
 def molecule_model_RNN_DNN(model_name):
     # Encoder
-    # encoder_input = Input(shape=(100, 1))
-    encoder_input = Input(shape=(100, 64))
+    encoder_input = Input(shape=(100, 1))
+    # encoder_input = Input(shape=(100, 64))
     encoded = LSTM(64, return_sequences=True)(encoder_input)
     encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(50, activation='relu')(encoded)
 
     # Decoder
-    # decoded = Dense(70, activation='sigmoid')(encoded)
-    # decoded = Dense(90, activation='relu')(decoded)
-    # decoded = Dense(100, activation='relu')(decoded)
-    # decoded = Reshape((100, 1))(decoded)
-    decoded = Dense(1000, activation='sigmoid')(encoded)
-    decoded = Dense(3200, activation='relu')(decoded)
-    decoded = Dense(6400, activation='relu')(decoded)
-    decoded = Reshape((100, 64))(decoded)
+    decoded = Dense(70, activation='sigmoid')(encoded)
+    decoded = Dense(90, activation='relu')(decoded)
+    decoded = Dense(100, activation='relu')(decoded)
+    decoded = Reshape((100, 1))(decoded)
+    # decoded = Dense(1000, activation='sigmoid')(encoded)
+    # decoded = Dense(3200, activation='relu')(decoded)
+    # decoded = Dense(6400, activation='relu')(decoded)
+    # decoded = Reshape((100, 64))(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
@@ -64,8 +64,8 @@ def molecule_model_RNN_DNN(model_name):
 
 def protein_model_RNN_RNN(model_name):
     # Encoder
-    # encoder_input = Input(shape=(1000, 1))
-    encoder_input = Input(shape=(1000, 25))
+    encoder_input = Input(shape=(1000, 1))
+    # encoder_input = Input(shape=(1000, 25))
     encoded = LSTM(64, return_sequences=True)(encoder_input)
     encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
@@ -76,12 +76,12 @@ def protein_model_RNN_RNN(model_name):
     decoded = Dense(128, activation='sigmoid')(decoded)
     decoded = LSTM(32, activation='relu', return_sequences=True)(decoded)
     decoded = LSTM(64, activation='relu')(decoded)
-    # decoded = Dense(500, activation='relu')(decoded)
-    # decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Dense(500, activation='relu')(decoded)
+    decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Reshape((1000, 1))(decoded)
+    # decoded = Dense(10000, activation='relu')(decoded)
+    # decoded = Dense(25000, activation='relu')(decoded)
     # decoded = Reshape((1000, 25))(decoded)
-    decoded = Dense(10000, activation='relu')(decoded)
-    decoded = Dense(25000, activation='relu')(decoded)
-    decoded = Reshape((1000, 25))(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
@@ -95,23 +95,23 @@ def protein_model_RNN_RNN(model_name):
 
 def protein_model_RNN_DNN(model_name):
     # Encoder
-    # encoder_input = Input(shape=(1000, 1))
-    encoder_input = Input(shape=(1000, 25))
+    encoder_input = Input(shape=(1000, 1))
+    # encoder_input = Input(shape=(1000, 25))
     encoded = LSTM(64, return_sequences=True)(encoder_input)
     encoded = LSTM(32)(encoded)
     encoded = Dense(128, activation='sigmoid')(encoded)
     encoded = Dense(30, activation='relu')(encoded)
 
     # Decoder
-    # decoded = Dense(200, activation='sigmoid')(encoded)
-    # decoded = Dense(700, activation='relu')(decoded)
-    # decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Dense(200, activation='sigmoid')(encoded)
+    decoded = Dense(700, activation='relu')(decoded)
+    decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Reshape((1000, 1))(decoded)
+    # decoded = Dense(1000, activation='sigmoid')(encoded)
+    # decoded = Dense(7500, activation='relu')(decoded)
+    # decoded = Dense(15000, activation='relu')(decoded)
+    # decoded = Dense(25000, activation='relu')(decoded)
     # decoded = Reshape((1000, 25))(decoded)
-    decoded = Dense(1000, activation='sigmoid')(encoded)
-    decoded = Dense(7500, activation='relu')(decoded)
-    decoded = Dense(15000, activation='relu')(decoded)
-    decoded = Dense(25000, activation='relu')(decoded)
-    decoded = Reshape((1000, 25))(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
@@ -148,8 +148,8 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32') #Need to uncomment 151 and 152
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32') #Need to uncomment 151 and 152
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
     # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
     # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 
@@ -167,8 +167,8 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
     # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
     # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 

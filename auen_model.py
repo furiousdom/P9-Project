@@ -7,8 +7,8 @@ NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
 def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    drug = Input(shape=(100, 64))
-    # drug = Input(shape=(100, 1))
+    # drug = Input(shape=(100, 64))
+    drug = Input(shape=(100, 1))
 
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(drug)
     encoded = MaxPooling1D()(encoded)
@@ -31,10 +31,10 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Conv1D(filters=1, kernel_size=FILTER_LENGTH, activation='relu')(decoded)
     decoded = UpSampling1D(4)(decoded)
     decoded = Flatten()(decoded)
-    # decoded = Dense(100, activation='relu')(decoded)
-    # decoded = Reshape((100, 1))(decoded)
-    decoded = Dense(6400, activation='relu')(decoded)
-    decoded = Reshape((100, 64))(decoded)
+    decoded = Dense(100, activation='relu')(decoded)
+    decoded = Reshape((100, 1))(decoded)
+    # decoded = Dense(6400, activation='relu')(decoded)
+    # decoded = Reshape((100, 64))(decoded)
     # decoded = Flatten()(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
@@ -49,8 +49,8 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
 def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    drug = Input(shape=(100, 64))
-    # drug = Input(shape=(100, 1))
+    # drug = Input(shape=(100, 64))
+    drug = Input(shape=(100, 1))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(drug)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -63,14 +63,14 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
     # Decoder
     # decoded = Reshape((10, 5))(encoded)
-    decoded = Dense(1920, activation='sigmoid')(encoded)
-    decoded = Dense(2560, activation='relu')(decoded)
-    decoded = Dense(6400, activation='relu')(decoded)
-    decoded = Reshape((100, 64))(decoded)
-    # decoded = Dense(70, activation='sigmoid')(encoded)
-    # decoded = Dense(90, activation='relu')(decoded)
-    # decoded = Dense(100, activation='relu')(decoded)
-    # decoded = Reshape((100, 1))(decoded)
+    # decoded = Dense(1920, activation='sigmoid')(encoded)
+    # decoded = Dense(2560, activation='relu')(decoded)
+    # decoded = Dense(6400, activation='relu')(decoded)
+    # decoded = Reshape((100, 64))(decoded)
+    decoded = Dense(70, activation='sigmoid')(encoded)
+    decoded = Dense(90, activation='relu')(decoded)
+    decoded = Dense(100, activation='relu')(decoded)
+    decoded = Reshape((100, 1))(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
 
@@ -84,8 +84,8 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
 def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    target = Input(shape=(1000, 25))
-    # target = Input(shape=(1000, 1))
+    # target = Input(shape=(1000, 25))
+    target = Input(shape=(1000, 1))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(target)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -107,11 +107,12 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = UpSampling1D()(decoded)
     decoded = Conv1D(filters=1, kernel_size=FILTER_LENGTH, activation='relu')(decoded)
     decoded = Flatten()(decoded)
-    # decoded = Dense(1000, activation='relu')(decoded)
-    # decoded = Reshape((1000, 1))(decoded)
-    decoded = Dense(25000, activation='relu')(decoded)
-    decoded = Reshape((1000, 25))(decoded)
+    decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Reshape((1000, 1))(decoded)
+    # decoded = Dense(25000, activation='relu')(decoded)
+    # decoded = Reshape((1000, 25))(decoded)
     # decoded = Flatten()(decoded)
+    
     # decoded = Dense(100, activation='relu')(decoded)
     # decoded = Reshape((100, 1))(decoded)
 
@@ -127,8 +128,8 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
 def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    # target = Input(shape=(1000, 1))
-    target = Input(shape=(1000, 25))
+    target = Input(shape=(1000, 1))
+    # target = Input(shape=(1000, 25))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(target)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -141,14 +142,14 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
     # Decoder
     # decoded = Reshape((10, 3))(encoded)
-    decoded = Dense(1000, activation='sigmoid')(encoded)
-    decoded = Dense(10000, activation='relu')(decoded)
-    decoded = Dense(25000, activation='relu')(decoded)
-    decoded = Reshape((1000, 25))(decoded)
-    # decoded = Dense(200, activation='sigmoid')(encoded)
-    # decoded = Dense(500, activation='relu')(decoded)
-    # decoded = Dense(1000, activation='relu')(decoded)
-    # decoded = Reshape((1000, 1))(decoded)
+    # decoded = Dense(1000, activation='sigmoid')(encoded)
+    # decoded = Dense(10000, activation='relu')(decoded)
+    # decoded = Dense(25000, activation='relu')(decoded)
+    # decoded = Reshape((1000, 25))(decoded)
+    decoded = Dense(200, activation='sigmoid')(encoded)
+    decoded = Dense(500, activation='relu')(decoded)
+    decoded = Dense(1000, activation='relu')(decoded)
+    decoded = Reshape((1000, 1))(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
 
@@ -185,8 +186,8 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 
     mol_autoencoder, mol_encoder = None, None
     if model_name == 'auen_molecule_CNN_CNN':
@@ -202,8 +203,8 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 
     prot_autoencoder, prot_encoder = None, None
     if model_name == 'auen_protein_CNN_CNN':

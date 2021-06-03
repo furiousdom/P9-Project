@@ -26,16 +26,16 @@ import experiments
 ########## DON'T UNCOMMENT BASE MODEL ##########
 
 print('Start Training')
-models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-experiments.run_autoencoder_train_session(models, 1, 'kiba', epochs=150, batch_size=256)
-experiments.run_autoencoder_train_session(models, 2, 'davis', epochs=150, batch_size=256)
+# models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+# experiments.run_autoencoder_train_session(models, 5, 'kiba', epochs=150, batch_size=256)
+# experiments.run_autoencoder_train_session(models, 6, 'davis', epochs=150, batch_size=256)
 models = ['arnn', 'arnn_molecule_RNN_RNN', 'arnn_protein_RNN_RNN', 'arnn_interaction_RNN_RNN']
-experiments.run_autoencoder_train_session(models, 1, 'kiba', epochs=150, batch_size=256)
-experiments.run_autoencoder_train_session(models, 2, 'davis', epochs=150, batch_size=256)
+experiments.run_autoencoder_train_session(models, 5, 'kiba', epochs=150, batch_size=256)
+experiments.run_autoencoder_train_session(models, 6, 'davis', epochs=150, batch_size=256)
 models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
-experiments.run_autoencoder_train_session(models, 1, 'kiba', epochs=150, batch_size=256)
-experiments.run_autoencoder_train_session(models, 2, 'davis', epochs=150, batch_size=256)
-models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
-experiments.run_autoencoder_train_session(models, 1, 'kiba', epochs=150, batch_size=256)
-experiments.run_autoencoder_train_session(models, 2, 'davis', epochs=150, batch_size=256)
+experiments.run_autoencoder_train_session(models, 5, 'kiba', epochs=150, batch_size=256)
+experiments.run_autoencoder_train_session(models, 6, 'davis', epochs=150, batch_size=256)
+# models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
+# experiments.run_autoencoder_train_session(models, 1, 'kiba', epochs=150, batch_size=256)
+# experiments.run_autoencoder_train_session(models, 2, 'davis', epochs=150, batch_size=256)
 print('Finished Training')
