@@ -74,14 +74,14 @@ def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
 
 
 def label_smiles(line, MAX_SMI_LEN, dictionary):
-	X = np.zeros(MAX_SMI_LEN)
+	X = np.zeros(MAX_SMI_LEN, np.uint8)
 	for i, ch in enumerate(line[:MAX_SMI_LEN]):
 		X[i] = dictionary[ch]
 
 	return X # .tolist()
 
 def label_sequence(line, MAX_SEQ_LEN, dictionary):
-	X = np.zeros(MAX_SEQ_LEN)
+	X = np.zeros(MAX_SEQ_LEN, np.uint8)
 
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i] = dictionary[ch]
@@ -132,9 +132,10 @@ class DataSet(object):
             Y = process_Y(Y)
         return np.asarray(molecules), np.asarray(proteins), np.asarray(Y)
 
-    def parse_data(self, with_label=False):
+    def parse_data(self, with_label=True):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
+        convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
 
         embedded_molecules = []
         embedded_proteins = []
@@ -144,12 +145,12 @@ class DataSet(object):
             for pair in json_dataset:
                 embedded_molecules.append(label_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
                 embedded_proteins.append(label_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
-                Y.append(pair[2])
+                Y.append(process_score(pair[2], convert=convert))
         else:
             for pair in json_dataset:
                 embedded_molecules.append(one_hot_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
                 embedded_proteins.append(one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
-                Y.append(pair[2])
+                Y.append(process_score(pair[2], convert=convert))
 
         print(f'molarraytype: {embedded_molecules[0].dtype}')
         print(f'protarraytype: {embedded_proteins[0].dtype}')
@@ -159,8 +160,8 @@ class DataSet(object):
         # print(f'y[0]: {Y[0]}')
         return embedded_molecules, embedded_proteins, Y
 
-    # def parse_data(self, with_label=True): 
-    #     fpath = self.dataset_folder_path	
+    # def parse_data(self, with_label=True):
+    #     fpath = self.dataset_folder_path
     #     print("Read %s start" % fpath)
 
     #     ligands = json.load(open(fpath+"ligands_can.txt"), object_pairs_hook=OrderedDict)
@@ -185,7 +186,7 @@ class DataSet(object):
 
     #         for t in proteins.keys():
     #             XT.append(one_hot_sequence(proteins[t], self.MAX_SEQ_LEN, self.fasta_dictionary))
-    
+
     #     return XD, XT, Y
 
 # from utils import save_json_obj_to_file

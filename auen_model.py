@@ -18,7 +18,7 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = MaxPooling1D()(encoded)
 
     encoded = Flatten()(encoded)
-    encoded = Dense(50, activation='relu')(encoded)
+    encoded = Dense(25, activation='relu')(encoded)
 
     # Decoder
     decoded = Dense(2976, activation='relu')(encoded)
@@ -59,7 +59,7 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = MaxPooling1D()(encoded)
 
     encoded = Flatten()(encoded)
-    encoded = Dense(50, activation='relu')(encoded)
+    encoded = Dense(25, activation='relu')(encoded)
 
     # Decoder
     # decoded = Reshape((10, 5))(encoded)
@@ -94,7 +94,7 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = MaxPooling1D()(encoded)
 
     encoded = Flatten()(encoded)
-    encoded = Dense(30, activation='relu')(encoded)
+    encoded = Dense(250, activation='relu')(encoded)
 
     # Decoder
     decoded = Dense(864, activation='relu')(encoded)
@@ -112,7 +112,7 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # decoded = Dense(25000, activation='relu')(decoded)
     # decoded = Reshape((1000, 25))(decoded)
     # decoded = Flatten()(decoded)
-    
+
     # decoded = Dense(100, activation='relu')(decoded)
     # decoded = Reshape((100, 1))(decoded)
 
@@ -138,7 +138,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = MaxPooling1D()(encoded)
 
     encoded = Flatten()(encoded)
-    encoded = Dense(30, activation='relu')(encoded)
+    encoded = Dense(250, activation='relu')(encoded)
 
     # Decoder
     # decoded = Reshape((10, 3))(encoded)
@@ -146,8 +146,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # decoded = Dense(10000, activation='relu')(decoded)
     # decoded = Dense(25000, activation='relu')(decoded)
     # decoded = Reshape((1000, 25))(decoded)
-    decoded = Dense(200, activation='sigmoid')(encoded)
-    decoded = Dense(500, activation='relu')(decoded)
+    decoded = Dense(500, activation='sigmoid')(encoded)
     decoded = Dense(1000, activation='relu')(decoded)
     decoded = Reshape((1000, 1))(decoded)
 
@@ -164,7 +163,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 def interaction_model(model_name):
     model = Sequential(name=model_name)
 
-    model.add(Input(shape=(80,)))
+    model.add(Input(shape=(275,)))
     model.add(Dense(700, activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(500, activation='sigmoid'))
