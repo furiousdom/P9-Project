@@ -72,8 +72,8 @@ def protein_model_RNN_RNN(model_name):
     # Decoder
     decoded = Reshape((250, 1))(encoded)
     decoded = Dense(125, activation='sigmoid')(decoded)
-    decoded = LSTM(32, activation='relu', return_sequences=True)(decoded)
-    decoded = LSTM(64, activation='relu')(decoded)
+    decoded = LSTM(32, return_sequences=True)(decoded)
+    decoded = LSTM(64)(decoded)
     decoded = Dense(500, activation='sigmoid')(decoded)
     decoded = Dense(1000, activation='relu')(decoded)
     decoded = Reshape((1000, 1))(decoded)
@@ -144,10 +144,8 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32') #Need to uncomment 151 and 152
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 
     mol_autoencoder, mol_encoder = None, None
     if model_name == 'arnn_molecule_RNN_RNN':
@@ -163,10 +161,8 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
-    # x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    # x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
 
     prot_autoencoder, prot_encoder = None, None
     if model_name == 'arnn_protein_RNN_RNN':

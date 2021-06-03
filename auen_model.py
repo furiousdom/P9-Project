@@ -185,8 +185,8 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
 
     mol_autoencoder, mol_encoder = None, None
     if model_name == 'auen_molecule_CNN_CNN':
@@ -202,8 +202,8 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('uint8')
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('uint8')
+    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
+    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
 
     prot_autoencoder, prot_encoder = None, None
     if model_name == 'auen_protein_CNN_CNN':

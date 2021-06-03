@@ -74,17 +74,17 @@ def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
 
 
 def label_smiles(line, MAX_SMI_LEN, dictionary):
-	X = np.zeros(MAX_SMI_LEN, np.uint8)
+	X = np.zeros(MAX_SMI_LEN, np.float32)
 	for i, ch in enumerate(line[:MAX_SMI_LEN]):
-		X[i] = dictionary[ch]
+		X[i] = dictionary[ch] / 10
 
 	return X # .tolist()
 
 def label_sequence(line, MAX_SEQ_LEN, dictionary):
-	X = np.zeros(MAX_SEQ_LEN, np.uint8)
+	X = np.zeros(MAX_SEQ_LEN, np.float32)
 
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
-		X[i] = dictionary[ch]
+		X[i] = dictionary[ch] / 10
 
 	return X # .tolist()
 
