@@ -132,7 +132,7 @@ class DataSet(object):
             Y = process_Y(Y)
         return np.asarray(molecules), np.asarray(proteins), np.asarray(Y)
 
-    def parse_data(self, with_label=True):
+    def parse_data(self, with_label=False):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
         convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False

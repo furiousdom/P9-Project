@@ -1,14 +1,14 @@
 from keras.models import Model, Sequential
 from keras.layers import Conv1D, UpSampling1D, MaxPooling1D
 from keras.layers import Input, Flatten, Reshape, Dense, Dropout
+from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
 def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    # drug = Input(shape=(100, 64))
-    drug = Input(shape=(100, 1))
+    drug = Input(shape=(100, 64))
 
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(drug)
     encoded = MaxPooling1D()(encoded)
@@ -31,25 +31,23 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Conv1D(filters=1, kernel_size=FILTER_LENGTH, activation='relu')(decoded)
     decoded = UpSampling1D(4)(decoded)
     decoded = Flatten()(decoded)
-    decoded = Dense(100, activation='relu')(decoded)
-    decoded = Reshape((100, 1))(decoded)
-    # decoded = Dense(6400, activation='relu')(decoded)
-    # decoded = Reshape((100, 64))(decoded)
+    decoded = Dense(6400, activation='relu')(decoded)
+    decoded = Reshape((100, 64))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=drug, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
 
 def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    # drug = Input(shape=(100, 64))
-    drug = Input(shape=(100, 1))
+    drug = Input(shape=(100, 64))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(drug)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -61,29 +59,24 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = Dense(50, activation='relu')(encoded)
 
     # Decoder
-    # decoded = Dense(1920, activation='sigmoid')(encoded)
-    # decoded = Dense(2560, activation='relu')(decoded)
-    # decoded = Dense(6400, activation='relu')(decoded)
-    # decoded = Reshape((100, 64))(decoded)
-    decoded = Dense(70, activation='sigmoid')(encoded)
-    decoded = Dense(90, activation='relu')(decoded)
-    decoded = Dense(100, activation='relu')(decoded)
-    decoded = Reshape((100, 1))(decoded)
+    decoded = Dense(1920, activation='sigmoid')(encoded)
+    decoded = Dense(2560, activation='relu')(decoded)
+    decoded = Dense(6400, activation='relu')(decoded)
+    decoded = Reshape((100, 64))(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=drug, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
 
 def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    # target = Input(shape=(1000, 25))
-    target = Input(shape=(1000, 1))
+    target = Input(shape=(1000, 25))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(target)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -105,25 +98,23 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = UpSampling1D()(decoded)
     decoded = Conv1D(filters=1, kernel_size=FILTER_LENGTH, activation='relu')(decoded)
     decoded = Flatten()(decoded)
-    decoded = Dense(1000, activation='relu')(decoded)
-    decoded = Reshape((1000, 1))(decoded)
-    # decoded = Dense(25000, activation='relu')(decoded)
-    # decoded = Reshape((1000, 25))(decoded)
+    decoded = Dense(25000, activation='relu')(decoded)
+    decoded = Reshape((1000, 25))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=target, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
 
 def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     # Encoder
-    target = Input(shape=(1000, 1))
-    # target = Input(shape=(1000, 25))
+    target = Input(shape=(1000, 25))
     encoded = Conv1D(filters=NUM_FILTERS, kernel_size=FILTER_LENGTH, activation='relu', input_shape=(None, ))(target)
     encoded = MaxPooling1D()(encoded)
     encoded = Conv1D(filters=NUM_FILTERS*2, kernel_size=FILTER_LENGTH, activation='relu')(encoded)
@@ -135,20 +126,17 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     encoded = Dense(250, activation='relu')(encoded)
 
     # Decoder
-    # decoded = Dense(1000, activation='sigmoid')(encoded)
-    # decoded = Dense(10000, activation='relu')(decoded)
-    # decoded = Dense(25000, activation='relu')(decoded)
-    # decoded = Reshape((1000, 25))(decoded)
-    decoded = Dense(500, activation='sigmoid')(encoded)
-    decoded = Dense(1000, activation='relu')(decoded)
-    decoded = Reshape((1000, 1))(decoded)
+    decoded = Dense(1000, activation='sigmoid')(encoded)
+    decoded = Dense(10000, activation='relu')(decoded)
+    decoded = Dense(25000, activation='relu')(decoded)
+    decoded = Reshape((1000, 25))(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=target, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
@@ -178,9 +166,6 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
-
     mol_autoencoder, mol_encoder = None, None
     if model_name == 'auen_molecule_CNN_CNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
@@ -195,9 +180,6 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    x_train = x_train.reshape(x_train.shape[0], x_train.shape[1], 1).astype('float32')
-    x_test = x_test.reshape(x_test.shape[0], x_test.shape[1], 1).astype('float32')
-
     prot_autoencoder, prot_encoder = None, None
     if model_name == 'auen_protein_CNN_CNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
