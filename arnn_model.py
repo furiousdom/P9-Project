@@ -1,6 +1,7 @@
 from keras.models import Model, Sequential
 from keras.layers import LSTM, Bidirectional
 from keras.layers import Input, Reshape, Dense, Dropout
+from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 
 def molecule_model_RNN_RNN(model_name):
@@ -19,13 +20,14 @@ def molecule_model_RNN_RNN(model_name):
     decoded = Dense(3200, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=encoder_input, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
@@ -43,13 +45,14 @@ def molecule_model_RNN_DNN(model_name):
     decoded = Dense(3200, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=encoder_input, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
@@ -69,13 +72,14 @@ def protein_model_RNN_RNN(model_name):
     decoded = Dense(10000, activation='relu')(decoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=encoder_input, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder
@@ -91,13 +95,14 @@ def protein_model_RNN_DNN(model_name):
     decoded = Dense(10000, activation='sigmoid')(encoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
 
     encoder = Model(inputs=encoder_input, outputs=encoded)
 
     metrics=['accuracy', 'mean_squared_error']
-    autoencoder.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
     return autoencoder, encoder

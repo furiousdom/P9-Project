@@ -1,5 +1,6 @@
 from keras.models import Model, Sequential
 from keras.layers import Conv1D, UpSampling1D, MaxPooling1D
+from keras.layers import Conv2D, UpSampling2D, MaxPooling2D # TODO
 from keras.layers import Input, Flatten, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
@@ -63,6 +64,7 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Dense(2560, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
 
@@ -130,6 +132,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Dense(10000, activation='relu')(decoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    decoded = softmax(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
 
@@ -174,6 +177,10 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
         mol_autoencoder, mol_encoder = molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
         mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
+    # x = mol_autoencoder.predict(x_test[:2])
+    # with open('./data/x.txt', 'w') as file:
+    #     file.write(str(x))
+    # print(x)
     encoded_x_test = mol_encoder.predict(x_test)
     encoded_x_train = mol_encoder.predict(x_train)
 

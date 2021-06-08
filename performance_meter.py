@@ -31,6 +31,7 @@ def binarize_results(dataset_name, Y):
     return np.array([binarize_score(y, threshold) for y in Y])
 
 def measure_and_print_performance(model_name, dataset_name, y_test, predictions):
+    print('Measuring performance...')
     binary_y_test = binarize_results(dataset_name, y_test)
     binary_predictions = binarize_results(dataset_name, predictions)
 
@@ -47,3 +48,4 @@ def measure_and_print_performance(model_name, dataset_name, y_test, predictions)
     print(f'\tMean Squared Error: {mse_sk}')
     print(f'\tr2m: {r2m_em}')
     print(f'\tAUPR: {aupr_em}')
+    
