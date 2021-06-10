@@ -161,7 +161,7 @@ class DataSet(object):
         return embedded_molecules, embedded_proteins, Y
 
 class AeDataSet(object):
-    def __init__(self):        
+    def __init__(self):
         self.MAX_SMI_LEN = 100
         self.MAX_SEQ_LEN = 1000
 
@@ -171,10 +171,21 @@ class AeDataSet(object):
         self.fasta_dictionary = FASTA_DICTIONARY
         self.fasta_dictionary_length = FASTA_DICTIONARY_LENGTH
 
-        self.kiba_molecules = load_json_obj_from_file('./data/kiba/ligands_iso.txt').values()
-        self.kiba_proteins = load_json_obj_from_file('./data/kiba/proteins.txt')
-        self.davis_molecules = load_json_obj_from_file('./data/davis/ligands_iso.txt')
-        self.davis_proteins = load_json_obj_from_file('./data/davis/proteins.txt')
+        self.kiba_molecules = set(load_json_obj_from_file('./data/kiba/ligands_iso.txt').values())
+        self.kiba_proteins = set(load_json_obj_from_file('./data/kiba/proteins.txt').values())
+        self.davis_molecules = set(load_json_obj_from_file('./data/davis/ligands_iso.txt').values())
+        self.davis_proteins = set(load_json_obj_from_file('./data/davis/proteins.txt').values())
 
-x = AeDataSet()
-print(x.kiba_molecules)
+    def davis_kiba_molecules(self):
+        molecules = self.kiba_molecules.union(self.davis_molecules)
+        embedded_molecules = []
+        for molecule in molecules:
+            embedded_molecules.append(one_hot_sequence(molecule, self.MAX_SMI_LEN, self.smiles_dictionary))
+        return embedded_molecules
+
+    def davis_kiba_proteins(self):
+        proteins = self.kiba_proteins.union(self.davis_proteins)
+        embedded_proteins = []
+        for protein in proteins:
+            embedded_proteins.append(one_hot_sequence(protein, self.MAX_SEQ_LEN, self.fasta_dictionary))
+        return embedded_proteins

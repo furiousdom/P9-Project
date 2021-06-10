@@ -4,6 +4,7 @@ from keras.layers import Input, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
+from keras.layers import concatenate
 
 def molecule_model_RNN_RNN(model_name):
     # Encoder
@@ -109,30 +110,31 @@ def protein_model_RNN_DNN(model_name):
     return autoencoder, encoder
 
 def interaction_model(model_name):
-    model = Sequential(name=model_name)
+    molecule_latent_vector = Input(shape=(50,))
+    protein_latent_vector = Input(shape=(250,))
+    pair = concatenate([molecule_latent_vector, protein_latent_vector])
 
-    model.add(Input(shape=(300,)))
-    model.add(Dense(700, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(500, activation='sigmoid'))
-    model.add(Dropout(0.1))
-    model.add(Dense(300, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(100, activation='sigmoid'))
-    model.add(Dropout(0.1))
-    model.add(Dense(50, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(25, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(1, activation='relu'))
+    prediction = Dense(700, activation='relu')(pair)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(500, activation='sigmoid')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(300, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(100, activation='sigmoid')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(50, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(25, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(1, activation='relu')(prediction)
 
-    metrics=['accuracy', 'mean_squared_error']
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    model = Model(inputs=[molecule_latent_vector, protein_latent_vector], outputs=[prediction], name=model_name)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
     print(model.summary())
     return model
 
-def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None):
     mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'arnn_molecule_RNN_RNN':
         mol_autoencoder, mol_encoder = molecule_model_RNN_RNN(model_name)
@@ -143,12 +145,9 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
 
     plot_training_metrics(model_name, model_training)
 
-    encoded_x_test = mol_encoder.predict(x_test)
-    encoded_x_train = mol_encoder.predict(x_train)
+    return mol_encoder
 
-    return encoded_x_train, encoded_x_test
-
-def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None):
     prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'arnn_protein_RNN_RNN':
         prot_autoencoder, prot_encoder = protein_model_RNN_RNN(model_name)
@@ -158,10 +157,8 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
         model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
     plot_training_metrics(model_name, model_training)
-    encoded_x_test = prot_encoder.predict(x_test)
-    encoded_x_train = prot_encoder.predict(x_train)
 
-    return encoded_x_train, encoded_x_test
+    return prot_encoder
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)

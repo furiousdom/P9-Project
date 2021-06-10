@@ -5,6 +5,7 @@ from keras.layers import Input, Flatten, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
+from keras.layers import concatenate
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
@@ -146,30 +147,31 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     return autoencoder, encoder
 
 def interaction_model(model_name):
-    model = Sequential(name=model_name)
+    molecule_latent_vector = Input(shape=(50,))
+    protein_latent_vector = Input(shape=(250,))
+    pair = concatenate([molecule_latent_vector, protein_latent_vector])
 
-    model.add(Input(shape=(300,)))
-    model.add(Dense(700, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(500, activation='sigmoid'))
-    model.add(Dropout(0.1))
-    model.add(Dense(300, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(100, activation='sigmoid'))
-    model.add(Dropout(0.1))
-    model.add(Dense(50, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(25, activation='relu'))
-    model.add(Dropout(0.1))
-    model.add(Dense(1, activation='relu'))
+    prediction = Dense(700, activation='relu')(pair)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(500, activation='sigmoid')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(300, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(100, activation='sigmoid')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(50, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(25, activation='relu')(prediction)
+    prediction = Dropout(0.1)(prediction)
+    prediction = Dense(1, activation='relu')(prediction)
 
-    metrics=['accuracy', 'mean_squared_error']
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
+    model = Model(inputs=[molecule_latent_vector, protein_latent_vector], outputs=[prediction], name=model_name)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
 
     print(model.summary())
     return model
 
-def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None):
     mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'auen_molecule_CNN_CNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
@@ -179,16 +181,10 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
         model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
     plot_training_metrics(model_name, model_training)
-    # x = mol_autoencoder.predict(x_test[:2])
-    # with open('./data/x.txt', 'w') as file:
-    #     file.write(str(x))
-    # print(x)
-    encoded_x_test = mol_encoder.predict(x_test)
-    encoded_x_train = mol_encoder.predict(x_train)
 
-    return encoded_x_train, encoded_x_test
+    return mol_encoder
 
-def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
+def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None):
     prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'auen_protein_CNN_CNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
@@ -198,10 +194,7 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
         model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
     plot_training_metrics(model_name, model_training)
-    encoded_x_test = prot_encoder.predict(x_test)
-    encoded_x_train = prot_encoder.predict(x_train)
-
-    return encoded_x_train, encoded_x_test
+    return prot_encoder
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)
