@@ -3,6 +3,7 @@ from keras.layers import LSTM, Bidirectional
 from keras.layers import Input, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
+from utils import plot_training_metrics
 
 def molecule_model_RNN_RNN(model_name):
     # Encoder
@@ -132,13 +133,15 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    mol_autoencoder, mol_encoder = None, None
+    mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'arnn_molecule_RNN_RNN':
         mol_autoencoder, mol_encoder = molecule_model_RNN_RNN(model_name)
-        mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
     elif model_name == 'arnn_molecule_RNN_DNN':
         mol_autoencoder, mol_encoder = molecule_model_RNN_DNN(model_name)
-        mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+
+    plot_training_metrics(model_name, model_training)
 
     encoded_x_test = mol_encoder.predict(x_test)
     encoded_x_train = mol_encoder.predict(x_train)
@@ -146,14 +149,15 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    prot_autoencoder, prot_encoder = None, None
+    prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'arnn_protein_RNN_RNN':
         prot_autoencoder, prot_encoder = protein_model_RNN_RNN(model_name)
-        prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
     elif model_name == 'arnn_protein_RNN_DNN':
         prot_autoencoder, prot_encoder = protein_model_RNN_DNN(model_name)
-        prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
+    plot_training_metrics(model_name, model_training)
     encoded_x_test = prot_encoder.predict(x_test)
     encoded_x_train = prot_encoder.predict(x_train)
 
@@ -161,6 +165,7 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)
-    model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
+    model_training = model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
+    plot_training_metrics(model_name, model_training)
     predictions = model.predict(dataset['x_test'])
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

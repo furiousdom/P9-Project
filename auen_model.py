@@ -4,6 +4,7 @@ from keras.layers import Conv2D, UpSampling2D, MaxPooling2D # TODO
 from keras.layers import Input, Flatten, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
+from utils import plot_training_metrics
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
@@ -40,7 +41,7 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
 
     encoder = Model(inputs=drug, outputs=encoded)
 
-    metrics=['accuracy', 'mean_squared_error']
+    metrics=['accuracy', 'mean_squared_error'] #, 'val_accuracy', 'val_loss']
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
@@ -169,14 +170,15 @@ def interaction_model(model_name):
     return model
 
 def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    mol_autoencoder, mol_encoder = None, None
+    mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'auen_molecule_CNN_CNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
-        mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
     elif model_name == 'auen_molecule_CNN_DNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
-        mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
+    plot_training_metrics(model_name, model_training)
     # x = mol_autoencoder.predict(x_test[:2])
     # with open('./data/x.txt', 'w') as file:
     #     file.write(str(x))
@@ -187,14 +189,15 @@ def train_molecule_model(model_name, x_train, x_test, batch_size, epochs, callba
     return encoded_x_train, encoded_x_test
 
 def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbacks=None):
-    prot_autoencoder, prot_encoder = None, None
+    prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'auen_protein_CNN_CNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
-        prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
     elif model_name == 'auen_protein_CNN_DNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
-        prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
 
+    plot_training_metrics(model_name, model_training)
     encoded_x_test = prot_encoder.predict(x_test)
     encoded_x_train = prot_encoder.predict(x_train)
 
@@ -202,6 +205,11 @@ def train_protein_model(model_name, x_train, x_test, batch_size, epochs, callbac
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)
-    model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
+    model_training = model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
+    plot_training_metrics(model_name, model_training)
     predictions = model.predict(dataset['x_test'])
+    print(f'Predictions of [0]: {predictions[0]}')
+    print(f'y_test[0]: {dataset["y_test"][0]}')
+    print(f'Predictions of [1]: {predictions[1]}')
+    print(f'y_test[1]: {dataset["y_test"][1]}')
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

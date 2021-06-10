@@ -1,6 +1,8 @@
 import json
 import psycopg2
 import pandas as pd
+import matplotlib.pyplot as plt
+import tensorflow as tf
 
 def load_json_obj_from_file(file_name):
     json_file = open(file_name, 'r', encoding='utf-8')
@@ -131,3 +133,40 @@ def save_metrics(model_name, dataset_name, metrics):
         file.write(f'\tMean Squared Error: {metrics["mse"]}\n')
         file.write(f'\tr2m: {metrics["r2m"]}\n')
         file.write(f'\tAUPR: {metrics["aupr"]}\n')
+
+def plot_training_metrics(model_name, model_training):
+    print(f'History keys: {model_training.history.keys()}')
+    # summarize history for accuracy
+    plt.plot(model_training.history['accuracy'])
+    # plt.plot(model_training.history['val_accuracy'])
+    plt.title(f'{model_name} accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train'], loc='upper left')
+    # plt.show()
+    plt.savefig(f'./data/results/{model_name}_accuracy.png')
+    plt.close()
+    # summarize history for loss
+    plt.plot(model_training.history['loss'])
+    # plt.plot(model_training.history['val_loss'])
+    plt.title(f'{model_name} loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    # plt.legend(['train', 'test'], loc='upper left')
+    plt.legend(['train'], loc='upper left')
+    # plt.show()
+    plt.savefig(f'./data/results/{model_name}_loss.png')
+    plt.close()
+
+def cindex_score(y_true, y_pred):
+    g = tf.subtract(tf.expand_dims(y_pred, -1), y_pred)
+    g = tf.cast(g == 0.0, tf.float32) * 0.5 + tf.cast(g > 0.0, tf.float32)
+
+    f = tf.subtract(tf.expand_dims(y_true, -1), y_true) > 0.0
+    f = tf.compat.v1.matrix_band_part(tf.cast(f, tf.float32), -1, 0)
+
+    g = tf.reduce_sum(tf.multiply(g, f))
+    f = tf.reduce_sum(f)
+
+    return tf.where(tf.equal(g, 0), 0.0, g/f) #select

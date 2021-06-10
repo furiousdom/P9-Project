@@ -160,40 +160,21 @@ class DataSet(object):
         # print(f'y[0]: {Y[0]}')
         return embedded_molecules, embedded_proteins, Y
 
-    # def parse_data(self, with_label=True):
-    #     fpath = self.dataset_folder_path
-    #     print("Read %s start" % fpath)
+class AeDataSet(object):
+    def __init__(self):        
+        self.MAX_SMI_LEN = 100
+        self.MAX_SEQ_LEN = 1000
 
-    #     ligands = json.load(open(fpath+"ligands_can.txt"), object_pairs_hook=OrderedDict)
-    #     proteins = json.load(open(fpath+"proteins.txt"), object_pairs_hook=OrderedDict)
+        self.smiles_dictionary = ISOMETRIC_SMILES_DICTIONARY
+        self.smiles_dictionary_size = ISOMETRIC_SMILES_DICTIONARY_LENGTH
 
-    #     Y = pickle.load(open(fpath + "Y","rb"), encoding='latin1') ### TODO: read from raw
-    #     if self.dataset_name in DATASETS_TO_PREPROCESS:
-    #         Y = -(np.log10(Y/(math.pow(10,9))))
+        self.fasta_dictionary = FASTA_DICTIONARY
+        self.fasta_dictionary_length = FASTA_DICTIONARY_LENGTH
 
-    #     XD = []
-    #     XT = []
+        self.kiba_molecules = load_json_obj_from_file('./data/kiba/ligands_iso.txt').values()
+        self.kiba_proteins = load_json_obj_from_file('./data/kiba/proteins.txt')
+        self.davis_molecules = load_json_obj_from_file('./data/davis/ligands_iso.txt')
+        self.davis_proteins = load_json_obj_from_file('./data/davis/proteins.txt')
 
-    #     if with_label:
-    #         for d in ligands.keys():
-    #             XD.append(label_smiles(ligands[d], self.MAX_SMI_LEN, self.smiles_dictionary))
-
-    #         for t in proteins.keys():
-    #             XT.append(label_sequence(proteins[t], self.MAX_SEQ_LEN, self.fasta_dictionary))
-    #     else:
-    #         for d in ligands.keys():
-    #             XD.append(one_hot_smiles(ligands[d], self.MAX_SMI_LEN, self.smiles_dictionary))
-
-    #         for t in proteins.keys():
-    #             XT.append(one_hot_sequence(proteins[t], self.MAX_SEQ_LEN, self.fasta_dictionary))
-
-    #     return XD, XT, Y
-
-# from utils import save_json_obj_to_file
-# dataset_name = 'kiba'
-# datasets_folder_path = f'./data/datasets/{dataset_name}/'
-
-# dataset = DataSet(dataset_name).parse_data()
-# save_json_obj_to_file(datasets_folder_path + 'molecules.json', dataset[0])
-# save_json_obj_to_file(datasets_folder_path + 'proteins.json', dataset[1])
-# save_json_obj_to_file(datasets_folder_path + 'binding_affinities.json', dataset[2])
+x = AeDataSet()
+print(x.kiba_molecules)
