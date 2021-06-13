@@ -1,3 +1,4 @@
+from subprocess import call
 from keras.models import Model, Sequential
 from keras.layers import Conv1D, UpSampling1D, MaxPooling1D
 from keras.layers import Conv2D, UpSampling2D, MaxPooling2D # TODO
@@ -5,6 +6,7 @@ from keras.layers import Input, Flatten, Reshape, Dense, Dropout
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
+from utils import cindex_score
 from keras.layers import concatenate
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
@@ -147,9 +149,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     return autoencoder, encoder
 
 def interaction_model(model_name):
-    molecule_latent_vector = Input(shape=(50,))
-    protein_latent_vector = Input(shape=(250,))
-    pair = concatenate([molecule_latent_vector, protein_latent_vector])
+    pair = Input(shape=(300,))
 
     prediction = Dense(700, activation='relu')(pair)
     prediction = Dropout(0.1)(prediction)
@@ -165,44 +165,46 @@ def interaction_model(model_name):
     prediction = Dropout(0.1)(prediction)
     prediction = Dense(1, activation='relu')(prediction)
 
-    model = Model(inputs=[molecule_latent_vector, protein_latent_vector], outputs=[prediction], name=model_name)
-    model.compile(optimizer='adam', loss='mean_squared_error', metrics=['accuracy'])
+    model = Model(inputs=[pair], outputs=[prediction], name=model_name)
+    model.compile(optimizer='adam', loss='mean_squared_error', metrics=[cindex_score, 'accuracy'])
 
     print(model.summary())
     return model
 
-def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None):
+def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None, train=False):
     mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'auen_molecule_CNN_CNN':
-        mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
-        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)               
     elif model_name == 'auen_molecule_CNN_DNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
+
+    if train:
         model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
-
-    plot_training_metrics(model_name, model_training)
-
+        plot_training_metrics(model_name, model_training)
+    else:
+        mol_autoencoder.load_weights(callbacks)
+    
     return mol_encoder
 
-def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None):
+def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None, train=False):
     prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'auen_protein_CNN_CNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
-        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
     elif model_name == 'auen_protein_CNN_DNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
-        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        
 
-    plot_training_metrics(model_name, model_training)
+    if train:
+        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+        plot_training_metrics(model_name, model_training)
+    else:
+        prot_autoencoder.load_weights(callbacks)
+    
     return prot_encoder
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):
     model = interaction_model(model_name)
     model_training = model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
-    plot_training_metrics(model_name, model_training)
+    plot_training_metrics(model_name, model_training, dataset['name'])
     predictions = model.predict(dataset['x_test'])
-    print(f'Predictions of [0]: {predictions[0]}')
-    print(f'y_test[0]: {dataset["y_test"][0]}')
-    print(f'Predictions of [1]: {predictions[1]}')
-    print(f'y_test[1]: {dataset["y_test"][1]}')
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

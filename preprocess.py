@@ -4,6 +4,7 @@ import json
 import pickle
 from utils import load_json_obj_from_file
 from collections import OrderedDict
+from utils import read_fastas_from_file
 
 FASTA_DICTIONARY = {
     "A": 1, "C": 2, "B": 3, "E": 4, "D": 5, "G": 6,
@@ -136,6 +137,7 @@ class DataSet(object):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
         convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
+        print(f'dataset conversion: {convert}')
 
         embedded_molecules = []
         embedded_proteins = []
@@ -158,7 +160,7 @@ class DataSet(object):
         # print(f'mol[0]: {embedded_molecules[0]}')
         # print(f'prot[0]: {embedded_proteins[0]}')
         # print(f'y[0]: {Y[0]}')
-        return embedded_molecules, embedded_proteins, Y
+        return np.asarray(embedded_molecules), np.asarray(embedded_proteins), np.asarray(Y)
 
 class AeDataSet(object):
     def __init__(self):
@@ -181,11 +183,26 @@ class AeDataSet(object):
         embedded_molecules = []
         for molecule in molecules:
             embedded_molecules.append(one_hot_sequence(molecule, self.MAX_SMI_LEN, self.smiles_dictionary))
-        return embedded_molecules
+        return np.asarray(embedded_molecules)
 
     def davis_kiba_proteins(self):
         proteins = self.kiba_proteins.union(self.davis_proteins)
         embedded_proteins = []
         for protein in proteins:
             embedded_proteins.append(one_hot_sequence(protein, self.MAX_SEQ_LEN, self.fasta_dictionary))
-        return embedded_proteins
+        return np.asarray(embedded_proteins)
+
+    def load_external_data(self):
+        molecules = load_json_obj_from_file('./data/drugbank-molecules.json')
+        proteins = load_json_obj_from_file('./data/drugbank-proteins.json')
+        embedded_molecules = []
+        for molecule in molecules:
+            if 'X' in molecule or 'x' in molecule or 'k' in molecule:
+                continue
+            embedded_molecules.append(one_hot_sequence(molecule, self.MAX_SMI_LEN, self.smiles_dictionary))
+        del molecules
+        embedded_proteins = []
+        for protein in proteins:
+            embedded_proteins.append(one_hot_sequence(protein, self.MAX_SEQ_LEN, self.fasta_dictionary))
+        del proteins
+        return np.asarray(embedded_molecules), np.asarray(embedded_proteins)

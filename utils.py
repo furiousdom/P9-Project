@@ -12,7 +12,7 @@ def load_json_obj_from_file(file_name):
 
 def save_json_obj_to_file(file_name, obj):
     json_file = open(file_name, 'w', encoding='utf-8')
-    data = json.dumps(obj)
+    data = json.dumps(obj, indent=4)
     json_file.write(data)
     json_file.close()
 
@@ -106,7 +106,25 @@ def read_fastas_from_file(file_name):
             if line[0] != '>':
                 genome += line.strip()
             else:
+                # if 'X' not in genome.upper():
                 sequences.append(genome.upper())
+                genome = ''
+        sequences.append(genome.upper())
+        del sequences[0]
+        return sequences
+
+def read_targets_from_fastas_file(file_name, uniprot_list):
+    with open(file_name, 'r') as file:
+        sequences = {}
+        genome = ''
+        uniprot_accession = ''
+        for line in file:
+            if line[0] != '>':
+                genome += line.strip()
+            else:
+                header_tokens = line.split('|')
+                uniprot_accession = header_tokens[1]
+                sequences[uniprot_accession] = genome
                 genome = ''
         sequences.append(genome.upper())
         del sequences[0]
@@ -134,8 +152,20 @@ def save_metrics(model_name, dataset_name, metrics):
         file.write(f'\tr2m: {metrics["r2m"]}\n')
         file.write(f'\tAUPR: {metrics["aupr"]}\n')
 
-def plot_training_metrics(model_name, model_training):
+def plot_training_metrics(model_name, model_training, dataset_name=''):
     print(f'History keys: {model_training.history.keys()}')
+    if 'cindex_score' in model_training.history.keys():
+        # summarize history for cindex_score
+        plt.plot(model_training.history['cindex_score'])
+        # plt.plot(model_training.history['val_cindex_score'])
+        plt.title(f'{model_name} cindex_score')
+        plt.ylabel('cindex_score')
+        plt.xlabel('epoch')
+        # plt.legend(['train', 'test'], loc='upper left')
+        plt.legend(['train'], loc='upper left')
+        # plt.show()
+        plt.savefig(f'./data/results/{model_name}-{dataset_name}_cindex_score.png')
+        plt.close()
     # summarize history for accuracy
     plt.plot(model_training.history['accuracy'])
     # plt.plot(model_training.history['val_accuracy'])
@@ -145,8 +175,9 @@ def plot_training_metrics(model_name, model_training):
     # plt.legend(['train', 'test'], loc='upper left')
     plt.legend(['train'], loc='upper left')
     # plt.show()
-    plt.savefig(f'./data/results/{model_name}_accuracy.png')
+    plt.savefig(f'./data/results/{model_name}-{dataset_name}_accuracy.png')
     plt.close()
+    
     # summarize history for loss
     plt.plot(model_training.history['loss'])
     # plt.plot(model_training.history['val_loss'])
@@ -156,7 +187,7 @@ def plot_training_metrics(model_name, model_training):
     # plt.legend(['train', 'test'], loc='upper left')
     plt.legend(['train'], loc='upper left')
     # plt.show()
-    plt.savefig(f'./data/results/{model_name}_loss.png')
+    plt.savefig(f'./data/results/{model_name}-{dataset_name}_loss.png')
     plt.close()
 
 def cindex_score(y_true, y_pred):
