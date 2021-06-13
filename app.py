@@ -29,11 +29,11 @@ import experiments
 ########## DON'T UNCOMMENT BASE MODEL ##########
 
 models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256)
-experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256)
+experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256, load_weights=True)
+experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256, load_weights=True)
 models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
-experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256)
-experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256)
+experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256, load_weights=True)
+experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256, load_weights=True)
 models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
-experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256)
-experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256)
+experiments.run_autoencoder_train_session(models, 23, 'kiba', epochs=100, batch_size=256, load_weights=True)
+experiments.run_autoencoder_train_session(models, 24, 'davis', epochs=100, batch_size=256, load_weights=True)

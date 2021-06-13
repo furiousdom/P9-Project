@@ -171,35 +171,46 @@ def interaction_model(model_name):
     print(model.summary())
     return model
 
-def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None, train=False):
+def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None):
     mol_autoencoder, mol_encoder, model_training = None, None, None
     if model_name == 'auen_molecule_CNN_CNN':
-        mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)               
+        mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
     elif model_name == 'auen_molecule_CNN_DNN':
         mol_autoencoder, mol_encoder = molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
 
-    if train:
-        model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
-        plot_training_metrics(model_name, model_training)
-    else:
-        mol_autoencoder.load_weights(callbacks)
-    
+    model_training = mol_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+    plot_training_metrics(model_name, model_training)
     return mol_encoder
 
-def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None, train=False):
+def load_molecule_model(model_name, checkpoint):
+    mol_autoencoder, mol_encoder = None, None
+    if model_name == 'auen_molecule_CNN_CNN':
+        mol_autoencoder, mol_encoder = molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
+    elif model_name == 'auen_molecule_CNN_DNN':
+        mol_autoencoder, mol_encoder = molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH1)
+
+    mol_autoencoder.load_weights(checkpoint)
+    return mol_encoder
+
+def train_protein_model(model_name, x_train, batch_size, epochs, callbacks=None):
     prot_autoencoder, prot_encoder, model_training = None, None, None
     if model_name == 'auen_protein_CNN_CNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
     elif model_name == 'auen_protein_CNN_DNN':
         prot_autoencoder, prot_encoder = protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
-        
 
-    if train:
-        model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
-        plot_training_metrics(model_name, model_training)
-    else:
-        prot_autoencoder.load_weights(callbacks)
-    
+    model_training = prot_autoencoder.fit(x_train, x_train, batch_size, epochs, callbacks=callbacks)
+    plot_training_metrics(model_name, model_training)
+    return prot_encoder
+
+def load_protein_model(model_name, checkpoint):
+    prot_autoencoder, prot_encoder = None, None
+    if model_name == 'auen_protein_CNN_CNN':
+        prot_autoencoder, prot_encoder = protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
+    elif model_name == 'auen_protein_CNN_DNN':
+        prot_autoencoder, prot_encoder = protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH2)
+
+    prot_autoencoder.load_weights(checkpoint)
     return prot_encoder
 
 def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=None):

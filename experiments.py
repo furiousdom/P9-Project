@@ -84,49 +84,65 @@ def run_network_train_session(model_name, model_version, dataset_name, threshold
     elif model_name == 'dcnn_model':
         dcnn_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])
 
-def run_network_test_session(model_name, model_version):
-    pass
-
-def run_autoencoder_train_session(model_names, version_of_models, dataset_name, epochs, batch_size):
-    if not compatible_dataset(version_of_models, dataset_name):
-        raise Error('Version of models not compatible with dataset.')
-    print('Training autoencoders...')
+def train_autoencoders(model_names, version_of_models, epochs, batch_size):
     molecules, proteins = AeDataSet().load_external_data()
+    molecule_encoder, protein_encoder = None, None
     if model_names[0] == 'auen':
         checkpoint_callback = checkpoint(checkpoint_path(model_names[1], version_of_models))
-        # sm = checkpoint_path(model_names[1], version_of_models)
         molecule_encoder = auen_model.train_molecule_model(model_names[1], molecules, batch_size, epochs, [checkpoint_callback])
         checkpoint_callback = checkpoint(checkpoint_path(model_names[2], version_of_models))
-        # sm = checkpoint_path(model_names[2], version_of_models)
         protein_encoder = auen_model.train_protein_model(model_names[2], proteins, batch_size, epochs, [checkpoint_callback])
-        del molecules, proteins
-        mols, prots, Y = DataSet(dataset_name).parse_data()
-        mols = molecule_encoder.predict(mols)
-        prots = protein_encoder.predict(prots)
-        pairs = []
-        for i in range(len(mols)):
-            pairs.append(np.concatenate((mols[i], prots[i])))
-        pairs = np.asarray(pairs)
-        dataset = get_simple_dataset_split(dataset_name, pairs, Y)
+    elif model_names[0] == 'arnn':
+        checkpoint_callback = checkpoint(checkpoint_path(model_names[1], version_of_models))
+        molecule_encoder = arnn_model.train_molecule_model(model_names[1], molecules, batch_size, epochs, [checkpoint_callback])
+        checkpoint_callback = checkpoint(checkpoint_path(model_names[2], version_of_models))
+        protein_encoder = arnn_model.train_protein_model(model_names[2], proteins, batch_size, epochs, [checkpoint_callback])
+    return molecule_encoder, protein_encoder
+
+def load_autoencoders(model_names, version_of_models):
+    molecule_encoder, protein_encoder = None, None
+    if model_names[0] == 'auen':
+        checkpoint = checkpoint_path(model_names[1], version_of_models)
+        molecule_encoder = auen_model.load_molecule_model(model_names[1], checkpoint)
+        checkpoint = checkpoint_path(model_names[2], version_of_models)
+        protein_encoder = auen_model.load_protein_model(model_names[2], checkpoint)
+    elif model_names[0] == 'arnn':
+        checkpoint = checkpoint_path(model_names[1], version_of_models)
+        molecule_encoder = arnn_model.load_molecule_model(model_names[1], checkpoint)
+        checkpoint = checkpoint_path(model_names[2], version_of_models)
+        protein_encoder = arnn_model.load_protein_model(model_names[2], checkpoint)
+    return molecule_encoder, protein_encoder
+
+def prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder):
+    mols, prots, Y = DataSet(dataset_name).parse_data()
+    mols = molecule_encoder.predict(mols)
+    prots = protein_encoder.predict(prots)
+    pairs = []
+    for i in range(len(mols)):
+        pairs.append(np.concatenate((mols[i], prots[i])))
+    pairs = np.asarray(pairs)
+    return get_simple_dataset_split(dataset_name, pairs, Y)
+
+def train_interaction_network(model_names, version_of_models, dataset, batch_size, epochs):
+    if model_names[0] == 'auen':
         checkpoint_callback = checkpoint(checkpoint_path(model_names[3], version_of_models))
         auen_model.train_interaction_model(model_names[3], dataset, batch_size, epochs, [checkpoint_callback])
     elif model_names[0] == 'arnn':
-        checkpoint_callback = checkpoint(checkpoint_path(model_names[1], version_of_models))
-        molecule_encoder = arnn_model.train_molecule_model(model_names[1], molecules, 8, epochs, [checkpoint_callback])
-        checkpoint_callback = checkpoint(checkpoint_path(model_names[2], version_of_models))
-        protein_encoder = arnn_model.train_protein_model(model_names[2], proteins, 4, epochs, [checkpoint_callback])
-        del molecules, proteins
-        mols, prots, Y = DataSet(dataset_name).parse_data()
-        mols, prots, Y = np.asarray(mols), np.asarray(prots), np.asarray(Y)
-        mols = molecule_encoder.predict(mols)
-        prots = protein_encoder.predict(prots)
-        pairs = []
-        for i in range(len(mols)):
-            pairs.append(np.concatenate((mols[i], prots[i])))
-        pairs = np.asarray(pairs)
-        dataset = get_simple_dataset_split(dataset_name, pairs, Y)
         checkpoint_callback = checkpoint(checkpoint_path(model_names[3], version_of_models))
         arnn_model.train_interaction_model(model_names[3], dataset, batch_size, epochs, [checkpoint_callback])
 
-def run_autoencoder_test_session():
+def test_interaction_network():
     pass
+
+def run_train_session(model_names, version_of_models, dataset_name, epochs, batch_size, load_weights):
+    if not compatible_dataset(version_of_models, dataset_name):
+        raise Error('Version of models not compatible with dataset.')
+    molecule_encoder, protein_encoder = None, None
+    if load_weights:
+        print('Loading autoencoders...')
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
+    else:
+        print('Training autoencoders...')
+        molecule_encoder, protein_encoder = train_autoencoders(model_names, version_of_models, batch_size, epochs)
+    dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
+    train_interaction_network(model_names, version_of_models, dataset, batch_size, epochs)
