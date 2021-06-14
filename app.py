@@ -38,12 +38,34 @@ import experiments
 # experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
 # experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
 
+
+########## RUN TESTING OF INTERACTION MODELS WITH FOLDS ##########
+# models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+# experiments.run_test_session_with_folds(models, 25, 'kiba')
+# experiments.run_test_session_with_folds(models, 26, 'davis')
+# models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
+# experiments.run_test_session_with_folds(models, 25, 'kiba')
+# experiments.run_test_session_with_folds(models, 26, 'davis')
+# models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
+# experiments.run_test_session_with_folds(models, 25, 'kiba')
+# experiments.run_test_session_with_folds(models, 26, 'davis')
+########## RUN TESTING OF INTERACTION MODELS WITH FOLDS ##########
+
+########## RUN TRAINING OF INTERACTION MODELS WITH FULL DATASETS ##########
 models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-experiments.run_test_session_with_folds(models, 25, 'kiba')
-experiments.run_test_session_with_folds(models, 26, 'davis')
+experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
 models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
-experiments.run_test_session_with_folds(models, 25, 'kiba')
-experiments.run_test_session_with_folds(models, 26, 'davis')
+experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
 models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
-experiments.run_test_session_with_folds(models, 25, 'kiba')
-experiments.run_test_session_with_folds(models, 26, 'davis')
+experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
+########## RUN TRAINING OF INTERACTION MODELS WITH FULL DATASETS ##########
+
+########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########
+########## DON'T FORGET TO CHANGE train_size BACK TO 0.33 IN get_simple_dataset_split ##########
+# models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+# experiments.run_training_with_more_epochs(models, 25, 'kiba', epochs=100, batch_size=256)
+# experiments.run_training_with_more_epochs(models, 28, 'davis', epochs=100, batch_size=256)
+########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########

@@ -28,7 +28,7 @@ def checkpoint(checkpoint_path):
     )
 
 def get_simple_dataset_split(dataset_name, X, Y):
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.33, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.84, random_state=0)
     return {
         'name': dataset_name,
         'x_train': x_train,
@@ -198,3 +198,24 @@ def run_test_session_with_folds(model_names, version_of_models, dataset_name):
     dataset = prepare_folded_dataset(dataset_name, molecule_encoder, protein_encoder)
     print('Prepared dataset.')
     test_interaction_network(model_names, version_of_models, dataset)
+
+def run_retraining_with_full_datasets(model_names, version_of_models, dataset_name, epochs, batch_size):
+    print('Loading autoencoders...')
+    if dataset_name == 'davis':
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
+    else:
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
+    dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
+    print('Prepared dataset.')
+    train_interaction_network(model_names, version_of_models, dataset, epochs, batch_size)
+
+def run_training_with_more_epochs(model_names, version_of_models, dataset_name, epochs, batch_size):
+    print('Training autoencoders...')
+    molecule_encoder, protein_encoder = None, None
+    if dataset_name == 'davis':
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
+    else:
+        molecule_encoder, protein_encoder = train_autoencoders(model_names, version_of_models, epochs, batch_size)
+    dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
+    print('Prepared dataset.')
+    train_interaction_network(model_names, version_of_models, dataset, epochs, batch_size)
