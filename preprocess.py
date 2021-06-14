@@ -2,6 +2,8 @@ import math
 import numpy as np
 import json
 import pickle
+
+from numpy.lib.function_base import append
 from utils import load_json_obj_from_file
 from collections import OrderedDict
 from utils import read_fastas_from_file
@@ -64,14 +66,14 @@ def one_hot_smiles(smiles_string, MAX_SMI_LEN, dictionary):
 	for i, ch in enumerate(smiles_string[:MAX_SMI_LEN]):
 		X[i, (dictionary[ch]-1)] = 1
 
-	return X # .tolist()
+	return X
 
 def one_hot_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros((MAX_SEQ_LEN, len(dictionary)), np.uint8)
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i, (dictionary[ch])-1] = 1
 
-	return X # .tolist()
+	return X
 
 
 def label_smiles(line, MAX_SMI_LEN, dictionary):
@@ -79,7 +81,7 @@ def label_smiles(line, MAX_SMI_LEN, dictionary):
 	for i, ch in enumerate(line[:MAX_SMI_LEN]):
 		X[i] = dictionary[ch] / 10
 
-	return X # .tolist()
+	return X
 
 def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	X = np.zeros(MAX_SEQ_LEN, np.float32)
@@ -87,7 +89,7 @@ def label_sequence(line, MAX_SEQ_LEN, dictionary):
 	for i, ch in enumerate(line[:MAX_SEQ_LEN]):
 		X[i] = dictionary[ch] / 10
 
-	return X # .tolist()
+	return X
 
 DATASETS_TO_PREPROCESS = ['davis']
 
@@ -154,6 +156,34 @@ class DataSet(object):
                 embedded_proteins.append(one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
                 Y.append(process_score(pair[2], convert=convert))
         return np.asarray(embedded_molecules), np.asarray(embedded_proteins), np.asarray(Y)
+
+    def load_folds(self):
+        json_dataset = load_json_obj_from_file(self.json_dataset_path)
+        test_fold = json.load(open(self.dataset_folder_path + 'folds/test_fold_setting1.txt'))
+        train_folds = json.load(open(self.dataset_folder_path + 'folds/train_fold_setting1.txt'))
+        molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
+        convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
+
+        train_molecules = []
+        train_proteins = []
+        train_Y = []
+
+        test_molecules = []
+        test_proteins = []
+        test_Y = []
+
+        # for fold in train_folds:
+        #     for index in fold:
+        #         train_molecules.append(one_hot_sequence(json_dataset[index][molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
+        #         train_proteins.append(one_hot_sequence(json_dataset[index][protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
+        #         train_Y.append(process_score(json_dataset[index][2], convert=convert))
+        # return train_molecules, train_proteins, train_Y
+
+        for index in test_fold:
+            test_molecules.append(one_hot_smiles(json_dataset[index][molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
+            test_proteins.append(one_hot_sequence(json_dataset[index][protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
+            test_Y.append(process_score(json_dataset[index][2], convert=convert))
+        return test_molecules, test_proteins, test_Y
 
 class AeDataSet(object):
     def __init__(self):

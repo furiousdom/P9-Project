@@ -52,4 +52,3 @@ def measure_and_print_performance(model_name, dataset_name, y_test, predictions)
     print(f'\tMean Squared Error: {mse_sk}')
     print(f'\tr2m: {r2m_em}')
     print(f'\tAUPR: {aupr_em}')
-    

@@ -123,12 +123,6 @@ def prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
     print('Feature extraction...')
     mols = molecule_encoder.predict(mols)
     prots = protein_encoder.predict(prots)
-    print(f'mols[0]: {mols[0]}')
-    print(f'mols[1]: {mols[1]}')
-    print(f'mols[136]: {mols[136]}')
-    print(f'prots[0]: {prots[0]}')
-    print(f'prots[1]: {prots[1]}') 
-    print(f'prots[136]: {prots[136]}')
     pairs = []
     for i in range(len(mols)):
         pairs.append(np.concatenate((mols[i], prots[i])))
@@ -139,7 +133,7 @@ def train_interaction_network(model_names, version_of_models, dataset, epochs, b
     checkpoint_callback = checkpoint(checkpoint_path(model_names[3], version_of_models))
     if model_names[0] == 'auen':
         auen_model.train_interaction_model(model_names[3], dataset, batch_size, epochs, [checkpoint_callback])
-    elif model_names[0] == 'arnn':   
+    elif model_names[0] == 'arnn':
         arnn_model.train_interaction_model(model_names[3], dataset, batch_size, epochs, [checkpoint_callback])
 
 def test_interaction_network(model_names, version_of_models, dataset):
@@ -156,10 +150,13 @@ def run_train_session(model_names, version_of_models, dataset_name, epochs, batc
     molecule_encoder, protein_encoder = None, None
     if load_weights:
         print('Loading autoencoders...')
-        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
+        if dataset_name == 'davis':
+            molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
+        else:
+            molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
         dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
         print('Prepared dataset.')
-        # test_interaction_network(model_names, version_of_models, dataset)
+        test_interaction_network(model_names, version_of_models, dataset)
     else:
         print('Training autoencoders...')
         molecule_encoder, protein_encoder = None, None
@@ -168,5 +165,30 @@ def run_train_session(model_names, version_of_models, dataset_name, epochs, batc
         else:
             molecule_encoder, protein_encoder = train_autoencoders(model_names, version_of_models, epochs, batch_size)
         dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
-        print('Prepared dataset.') 
+        print('Prepared dataset.')
         train_interaction_network(model_names, version_of_models, dataset, epochs, batch_size)
+
+def prepare_folded_dataset(dataset_name, molecule_encoder, protein_encoder):
+    print(f'Loading {dataset_name} dataset..')
+    mols, prots, Y = DataSet(dataset_name).load_folds()
+    print('Feature extraction...')
+    mols = molecule_encoder.predict(mols)
+    prots = protein_encoder.predict(prots)
+    pairs = []
+    for i in range(len(mols)):
+        pairs.append(np.concatenate((mols[i], prots[i])))
+    pairs = np.asarray(pairs)
+    return get_simple_dataset_split(dataset_name, pairs, Y)
+
+def run_test_session_with_folds(model_names, version_of_models, dataset_name):
+    if not compatible_dataset(version_of_models, dataset_name):
+        raise Error('Version of models not compatible with dataset.')
+    molecule_encoder, protein_encoder = None, None
+    print('Loading autoencoders...')
+    if dataset_name == 'davis':
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
+    else:
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
+    dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
+    print('Prepared dataset.')
+    test_interaction_network(model_names, version_of_models, dataset)
