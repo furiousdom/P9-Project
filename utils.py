@@ -164,7 +164,7 @@ def plot_training_metrics(model_name, model_training, dataset_name=''):
         # plt.legend(['train', 'test'], loc='upper left')
         plt.legend(['train'], loc='upper left')
         # plt.show()
-        plt.savefig(f'./data/results/{model_name}-{dataset_name}_cindex_score.png')
+        plt.savefig(f'./data/results/{model_name}-{dataset_name}-cindex_score.png')
         plt.close()
     # summarize history for accuracy
     plt.plot(model_training.history['accuracy'])
@@ -175,7 +175,7 @@ def plot_training_metrics(model_name, model_training, dataset_name=''):
     # plt.legend(['train', 'test'], loc='upper left')
     plt.legend(['train'], loc='upper left')
     # plt.show()
-    plt.savefig(f'./data/results/{model_name}-{dataset_name}_accuracy.png')
+    plt.savefig(f'./data/results/{model_name}-{dataset_name}-accuracy.png')
     plt.close()
     
     # summarize history for loss
@@ -187,7 +187,7 @@ def plot_training_metrics(model_name, model_training, dataset_name=''):
     # plt.legend(['train', 'test'], loc='upper left')
     plt.legend(['train'], loc='upper left')
     # plt.show()
-    plt.savefig(f'./data/results/{model_name}-{dataset_name}_loss.png')
+    plt.savefig(f'./data/results/{model_name}-{dataset_name}-loss.png')
     plt.close()
 
 def cindex_score(y_true, y_pred):

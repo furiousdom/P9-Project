@@ -3,6 +3,7 @@ from keras.models import Model, Sequential
 from keras.layers import Conv1D, UpSampling1D, MaxPooling1D
 from keras.layers import Conv2D, UpSampling2D, MaxPooling2D # TODO
 from keras.layers import Input, Flatten, Reshape, Dense, Dropout
+from keras.layers import Softmax
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
@@ -38,6 +39,7 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Flatten()(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
@@ -68,6 +70,7 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Dense(2560, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=drug, outputs=decoded, name=model_name)
@@ -106,6 +109,7 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Flatten()(decoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
@@ -136,6 +140,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     decoded = Dense(10000, activation='relu')(decoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=target, outputs=decoded, name=model_name)
@@ -217,5 +222,11 @@ def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=N
     model = interaction_model(model_name)
     model_training = model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     plot_training_metrics(model_name, model_training, dataset['name'])
+    predictions = model.predict(dataset['x_test'])
+    print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))
+
+def test_interaction_model(model_name, dataset, checkpoint):
+    model = interaction_model(model_name)
+    model.load_weights(checkpoint)
     predictions = model.predict(dataset['x_test'])
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

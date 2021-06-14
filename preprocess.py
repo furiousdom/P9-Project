@@ -153,13 +153,6 @@ class DataSet(object):
                 embedded_molecules.append(one_hot_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
                 embedded_proteins.append(one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
                 Y.append(process_score(pair[2], convert=convert))
-
-        print(f'molarraytype: {embedded_molecules[0].dtype}')
-        print(f'protarraytype: {embedded_proteins[0].dtype}')
-
-        # print(f'mol[0]: {embedded_molecules[0]}')
-        # print(f'prot[0]: {embedded_proteins[0]}')
-        # print(f'y[0]: {Y[0]}')
         return np.asarray(embedded_molecules), np.asarray(embedded_proteins), np.asarray(Y)
 
 class AeDataSet(object):

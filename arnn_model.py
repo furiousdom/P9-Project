@@ -1,6 +1,7 @@
 from keras.models import Model, Sequential
 from keras.layers import LSTM, Bidirectional
 from keras.layers import Input, Reshape, Dense, Dropout
+from keras.layers import Softmax
 from keras.activations import softmax
 from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
@@ -23,6 +24,7 @@ def molecule_model_RNN_RNN(model_name):
     decoded = Dense(3200, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
@@ -48,6 +50,7 @@ def molecule_model_RNN_DNN(model_name):
     decoded = Dense(3200, activation='relu')(decoded)
     decoded = Dense(6400, activation='relu')(decoded)
     decoded = Reshape((100, 64))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
@@ -75,6 +78,7 @@ def protein_model_RNN_RNN(model_name):
     decoded = Dense(10000, activation='relu')(decoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
@@ -98,6 +102,7 @@ def protein_model_RNN_DNN(model_name):
     decoded = Dense(10000, activation='sigmoid')(encoded)
     decoded = Dense(25000, activation='relu')(decoded)
     decoded = Reshape((1000, 25))(decoded)
+    # decoded = Softmax()(decoded)
     decoded = softmax(decoded)
 
     autoencoder = Model(inputs=encoder_input, outputs=decoded, name=model_name)
@@ -179,5 +184,11 @@ def train_interaction_model(model_name, dataset, batch_size, epochs, callbacks=N
     model = interaction_model(model_name)
     model_training = model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     plot_training_metrics(model_name, model_training, dataset['name'])
+    predictions = model.predict(dataset['x_test'])
+    print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))
+
+def test_interaction_model(model_name, dataset, checkpoint):
+    model = interaction_model(model_name)
+    model.load_weights(checkpoint)
     predictions = model.predict(dataset['x_test'])
     print(measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten()))

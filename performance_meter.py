@@ -35,9 +35,13 @@ def measure_and_print_performance(model_name, dataset_name, y_test, predictions)
     binary_y_test = binarize_results(dataset_name, y_test)
     binary_predictions = binarize_results(dataset_name, predictions)
 
+    print('Calculating CI...')
     ci_em = round(emetrics.get_cindex(y_test, predictions), 3)
+    print('Calculating R2M...')
     r2m_em = round(emetrics.get_rm2(y_test, predictions), 3)
+    print('Calculating AUPR...')
     aupr_em = round(emetrics.get_aupr(binary_y_test, binary_predictions), 3)
+    print('Calculating MSE...')
     mse_sk = round(sk_mse(y_test, predictions), 3)
 
     metrics = { 'ci': ci_em, 'r2m': r2m_em, 'aupr': aupr_em, 'mse': mse_sk }
