@@ -28,12 +28,22 @@ import experiments
 # experiments.run_train_session(models, 22, 'davis', epochs=100, batch_size=256)
 ########## DON'T UNCOMMENT BASE MODEL ##########
 
+# models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+# experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
+# experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+# models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
+# experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
+# experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+# models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
+# experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
+# experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+
 models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
-experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+experiments.run_test_session_with_folds(models, 25, 'kiba')
+experiments.run_test_session_with_folds(models, 26, 'davis')
 models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
-experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
-experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+experiments.run_test_session_with_folds(models, 25, 'kiba')
+experiments.run_test_session_with_folds(models, 26, 'davis')
 models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
-experiments.run_train_session(models, 25, 'kiba', epochs=100, batch_size=256, load_weights=False)
-experiments.run_train_session(models, 26, 'davis', epochs=100, batch_size=256, load_weights=False)
+experiments.run_test_session_with_folds(models, 25, 'kiba')
+experiments.run_test_session_with_folds(models, 26, 'davis')

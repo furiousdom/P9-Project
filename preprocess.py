@@ -139,7 +139,7 @@ class DataSet(object):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
         convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
-        print(f'dataset conversion: {convert}')
+        print(f'Dataset conversion: {convert}')
 
         embedded_molecules = []
         embedded_proteins = []
@@ -183,7 +183,7 @@ class DataSet(object):
             test_molecules.append(one_hot_smiles(json_dataset[index][molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary))
             test_proteins.append(one_hot_sequence(json_dataset[index][protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary))
             test_Y.append(process_score(json_dataset[index][2], convert=convert))
-        return test_molecules, test_proteins, test_Y
+        return np.asarray(test_molecules), np.asarray(test_proteins), np.asarray(test_Y)
 
 class AeDataSet(object):
     def __init__(self):

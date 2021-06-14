@@ -174,11 +174,17 @@ def prepare_folded_dataset(dataset_name, molecule_encoder, protein_encoder):
     print('Feature extraction...')
     mols = molecule_encoder.predict(mols)
     prots = protein_encoder.predict(prots)
+    print(f'mols[0]: {mols[0]}')
+    print(f'prots[0]: {prots[0]}')
     pairs = []
     for i in range(len(mols)):
         pairs.append(np.concatenate((mols[i], prots[i])))
     pairs = np.asarray(pairs)
-    return get_simple_dataset_split(dataset_name, pairs, Y)
+    return {
+        'name': dataset_name,
+        'x_test': pairs,
+        'y_test': Y
+    }
 
 def run_test_session_with_folds(model_names, version_of_models, dataset_name):
     if not compatible_dataset(version_of_models, dataset_name):
@@ -189,6 +195,6 @@ def run_test_session_with_folds(model_names, version_of_models, dataset_name):
         molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
     else:
         molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
-    dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
+    dataset = prepare_folded_dataset(dataset_name, molecule_encoder, protein_encoder)
     print('Prepared dataset.')
     test_interaction_network(model_names, version_of_models, dataset)
