@@ -158,11 +158,11 @@ def interaction_model(model_name):
 
     prediction = Dense(700, activation='relu')(pair)
     prediction = Dropout(0.1)(prediction)
-    prediction = Dense(500, activation='sigmoid')(prediction)
+    prediction = Dense(500, activation='relu')(prediction)
     prediction = Dropout(0.1)(prediction)
     prediction = Dense(300, activation='relu')(prediction)
     prediction = Dropout(0.1)(prediction)
-    prediction = Dense(100, activation='sigmoid')(prediction)
+    prediction = Dense(100, activation='relu')(prediction)
     prediction = Dropout(0.1)(prediction)
     prediction = Dense(50, activation='relu')(prediction)
     prediction = Dropout(0.1)(prediction)

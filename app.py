@@ -55,17 +55,23 @@ import experiments
 models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
 experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
 experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
-models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
-experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
-experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
-models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
-experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
-experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
+# models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
+# experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+# experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
+# models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
+# experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+# experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
 ########## RUN TRAINING OF INTERACTION MODELS WITH FULL DATASETS ##########
+
+# BEFORE RUNNING app.py AGAIN
+    # Cut and paste the results into Full_dataset_results folder
+    # Comment out lines 55-57
+    # Un-comment lines 70-72
+    # Change train_size back to 0.33 in get_simple_dataset_split function (experiments.py line 31)
 
 ########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########
 ########## DON'T FORGET TO CHANGE train_size BACK TO 0.33 IN get_simple_dataset_split ##########
 # models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-# experiments.run_training_with_more_epochs(models, 25, 'kiba', epochs=100, batch_size=256)
-# experiments.run_training_with_more_epochs(models, 28, 'davis', epochs=100, batch_size=256)
+# experiments.run_training_with_more_epochs(models, 29, 'kiba', epochs=200, batch_size=256)
+# experiments.run_training_with_more_epochs(models, 30, 'davis', epochs=200, batch_size=256)
 ########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########

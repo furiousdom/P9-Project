@@ -202,9 +202,9 @@ def run_test_session_with_folds(model_names, version_of_models, dataset_name):
 def run_retraining_with_full_datasets(model_names, version_of_models, dataset_name, epochs, batch_size):
     print('Loading autoencoders...')
     if dataset_name == 'davis':
-        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 1)
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 3)
     else:
-        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models)
+        molecule_encoder, protein_encoder = load_autoencoders(model_names, version_of_models - 2)
     dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
     print('Prepared dataset.')
     train_interaction_network(model_names, version_of_models, dataset, epochs, batch_size)
