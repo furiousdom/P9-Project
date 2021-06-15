@@ -66,7 +66,7 @@ experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, b
 # BEFORE RUNNING app.py AGAIN
     # Cut and paste the results into Full_dataset_results folder
     # Comment out lines 55-57
-    # Un-comment lines 70-72
+    # Un-comment lines 74-76
     # Change train_size back to 0.33 in get_simple_dataset_split function (experiments.py line 31)
 
 ########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########
@@ -75,3 +75,10 @@ experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, b
 # experiments.run_training_with_more_epochs(models, 29, 'kiba', epochs=200, batch_size=256)
 # experiments.run_training_with_more_epochs(models, 30, 'davis', epochs=200, batch_size=256)
 ########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########
+
+
+
+########## BASE MODEL TRAINING ##########
+# experiments.base_model_training('base_model', 1, 'kiba', 100, 256)
+# experiments.base_model_training('base_model', 2, 'davis', 100, 256)
+########## BASE MODEL TRAINING ##########

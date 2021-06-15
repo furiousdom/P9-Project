@@ -2,17 +2,17 @@ from keras.models import Sequential
 from keras.layers import Input, Dense, Dropout
 from performance_meter import measure_and_print_performance
 
-def get_model(model_name):
+def get_model(model_name, input_shape):
     model = Sequential(name=model_name)
 
-    model.add(Input(shape=(400, )))
+    model.add(Input(shape=(input_shape, )))
     model.add(Dense(700, activation='relu'))
     model.add(Dropout(0.1))
-    model.add(Dense(500, activation='sigmoid'))
+    model.add(Dense(500, activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(300, activation='relu'))
     model.add(Dropout(0.1))
-    model.add(Dense(100, activation='sigmoid'))
+    model.add(Dense(100, activation='relu'))
     model.add(Dropout(0.1))
     model.add(Dense(50, activation='relu'))
     model.add(Dropout(0.1))

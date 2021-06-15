@@ -219,3 +219,16 @@ def run_training_with_more_epochs(model_names, version_of_models, dataset_name, 
     dataset = prepare_interaction_dataset(dataset_name, molecule_encoder, protein_encoder)
     print('Prepared dataset.')
     train_interaction_network(model_names, version_of_models, dataset, epochs, batch_size)
+
+def base_model_training(model_name, model_version, dataset_name, encoding_style, epochs, batch_size):
+    if not compatible_dataset(model_version, dataset_name):
+        raise Error('Version of models not compatible with dataset.')
+    X, Y = None, None
+    if encoding_style == 'one-hot':
+        X, Y = DataSet(dataset_name).parse_flattened_data()
+    else:
+        Y, Y = load_dataset(dataset_name)
+    # MAKE SURE THE TRAINING SPLIT IS 0.33!!!
+    dataset = get_simple_dataset_split(dataset_name, X, Y)
+    checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
+    base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])

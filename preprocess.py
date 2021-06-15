@@ -157,6 +157,27 @@ class DataSet(object):
                 Y.append(process_score(pair[2], convert=convert))
         return np.asarray(embedded_molecules), np.asarray(embedded_proteins), np.asarray(Y)
 
+    def parse_flattened_data(self):
+        json_dataset = load_json_obj_from_file(self.json_dataset_path)
+        molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
+        convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
+        print(f'Dataset conversion: {convert}')
+
+        embedded_flattened_pairs = []
+        Y = []
+
+        for pair in json_dataset:
+            embedded_flattened_pairs.append(
+                np.concatenate(
+                    (
+                        one_hot_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary).flatten(),
+                        one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary).flatten()
+                    )
+                )
+            )
+            Y.append(process_score(pair[2], convert=convert))
+        return np.asarray(embedded_flattened_pairs), np.asarray(Y)
+
     def load_folds(self):
         json_dataset = load_json_obj_from_file(self.json_dataset_path)
         test_fold = json.load(open(self.dataset_folder_path + 'folds/test_fold_setting1.txt'))
