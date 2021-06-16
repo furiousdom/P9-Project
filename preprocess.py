@@ -158,7 +158,7 @@ class DataSet(object):
         return np.asarray(embedded_molecules), np.asarray(embedded_proteins), np.asarray(Y)
 
     def parse_flattened_data(self):
-        json_dataset = load_json_obj_from_file(self.json_dataset_path)
+        json_dataset = load_json_obj_from_file(self.json_dataset_path) #Instead of loading the entire dataset. Load it up using the folds. Return both the train folds and the test folds.
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
         convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
         print(f'Dataset conversion: {convert}')
@@ -170,12 +170,42 @@ class DataSet(object):
             embedded_flattened_pairs.append(
                 np.concatenate(
                     (
-                        one_hot_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary).flatten(),
+                        one_hot_smiles(pair[molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary).flatten(), # Need the flatten to 
                         one_hot_sequence(pair[protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary).flatten()
                     )
                 )
             )
             Y.append(process_score(pair[2], convert=convert))
+        return np.asarray(embedded_flattened_pairs), np.asarray(Y)
+
+    def parse_flattened_data_with_folds(self):
+        json_dataset = load_json_obj_from_file(self.json_dataset_path)
+        test_fold = json.load(open(self.dataset_folder_path + 'folds/test_fold_setting1.txt'))
+        train_folds = json.load(open(self.dataset_folder_path + 'folds/train_fold_setting1.txt'))
+        molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
+        convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
+
+        train_molecules = []
+        train_proteins = []
+        train_Y = []
+
+        test_molecules = []
+        test_proteins = []
+        test_Y = []
+
+        embedded_flattened_pairs = []
+        Y = []
+
+        for pair in test_fold:
+            embedded_flattened_pairs.append(
+                np.concatenate(
+                    (
+                        one_hot_smiles(json_dataset[pair][molecule_idx], self.MAX_SMI_LEN, self.smiles_dictionary).flatten(),
+                        one_hot_sequence(json_dataset[pair][protein_idx], self.MAX_SEQ_LEN, self.fasta_dictionary).flatten()
+                    )
+                )
+            )
+            Y.append(process_score(json_dataset[pair][2], convert=convert))
         return np.asarray(embedded_flattened_pairs), np.asarray(Y)
 
     def load_folds(self):

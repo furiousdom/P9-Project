@@ -19,8 +19,8 @@ import experiments
 # print('Program finished.')
 
 ########## DON'T UNCOMMENT BASE MODEL ##########
-# experiments.run_network_train_session('base_model', 1, 'kiba', epochs=128, batch_size=256)
-# experiments.run_network_train_session('base_model', 2, 'davis', epochs=128, batch_size=256)
+experiments.run_network_train_session('base_model', 1, 'kiba', epochs=100, batch_size=256)
+experiments.run_network_train_session('base_model', 2, 'davis', epochs=100, batch_size=256)
 # experiments.run_network_train_session('dcnn_model', 1, 'kiba', epochs=100, batch_size=256)
 # experiments.run_network_train_session('dcnn_model', 2, 'davis', epochs=100, batch_size=256)
 # models = ['arnn', 'arnn_molecule_RNN_RNN', 'arnn_protein_RNN_RNN', 'arnn_interaction_RNN_RNN']
@@ -52,9 +52,9 @@ import experiments
 ########## RUN TESTING OF INTERACTION MODELS WITH FOLDS ##########
 
 ########## RUN TRAINING OF INTERACTION MODELS WITH FULL DATASETS ##########
-models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
-experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
-experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
+# models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+# experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
+# experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
 # models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
 # experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
 # experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
@@ -62,12 +62,6 @@ experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, b
 # experiments.run_retraining_with_full_datasets(models, 27, 'kiba', epochs=100, batch_size=256)
 # experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, batch_size=256)
 ########## RUN TRAINING OF INTERACTION MODELS WITH FULL DATASETS ##########
-
-# BEFORE RUNNING app.py AGAIN
-    # Cut and paste the results into Full_dataset_results folder
-    # Comment out lines 55-57
-    # Un-comment lines 74-76
-    # Change train_size back to 0.33 in get_simple_dataset_split function (experiments.py line 31)
 
 ########## RUN TRAINING OF MOLECULE AUTOENCODER WITH MORE EPOCHS ##########
 ########## DON'T FORGET TO CHANGE train_size BACK TO 0.33 IN get_simple_dataset_split ##########
@@ -79,6 +73,12 @@ experiments.run_retraining_with_full_datasets(models, 28, 'davis', epochs=100, b
 
 
 ########## BASE MODEL TRAINING ##########
-# experiments.base_model_training('base_model', 1, 'kiba', 100, 256)
-# experiments.base_model_training('base_model', 2, 'davis', 100, 256)
+# experiments.base_model_training('base_model', 9, 'kiba', 'one-hot', 100, 256)
+# experiments.base_model_training('base_model', 10, 'davis', 'one-hot', 100, 256)
+# experiments.base_model_training_with_folds('base_model', 9, 'kiba', 'one-hot', 100, 256)
+# experiments.base_model_training_with_folds('base_model', 10, 'davis', 'one-hot', 100, 256)
+# experiments.base_model_training('base_model', 7, 'kiba', 'featurize', 100, 256)
+# experiments.base_model_training('base_model', 8, 'davis', 'featurize', 100, 256)
 ########## BASE MODEL TRAINING ##########
+
+#Make sure to save the results into a folder called base_model_one_hot

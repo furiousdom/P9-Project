@@ -28,7 +28,7 @@ def checkpoint(checkpoint_path):
     )
 
 def get_simple_dataset_split(dataset_name, X, Y):
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.84, random_state=0)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, train_size=0.33, random_state=0)
     return {
         'name': dataset_name,
         'x_train': x_train,
@@ -231,4 +231,17 @@ def base_model_training(model_name, model_version, dataset_name, encoding_style,
     # MAKE SURE THE TRAINING SPLIT IS 0.33!!!
     dataset = get_simple_dataset_split(dataset_name, X, Y)
     checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
-    base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback])
+    base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback], X.shape[1])
+
+def base_model_training_with_folds(model_name, model_version, dataset_name, encoding_style, epochs, batch_size):
+    if not compatible_dataset(model_version, dataset_name):
+        raise Error('Version of models not compatible with dataset.')
+    X, Y = None, None
+    if encoding_style == 'one-hot':
+        X, Y = DataSet(dataset_name).parse_flattened_data_with_folds()
+    else:
+        Y, Y = load_dataset(dataset_name)
+    # MAKE SURE THE TRAINING SPLIT IS 0.33!!!
+    dataset = get_simple_dataset_split(dataset_name, X, Y)
+    checkpoint_callback = checkpoint(checkpoint_path(model_name, model_version))
+    base_model.train(model_name, dataset, batch_size, epochs, [checkpoint_callback], X.shape[1])

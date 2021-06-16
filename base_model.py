@@ -26,8 +26,8 @@ def get_model(model_name, input_shape):
     print(model.summary())
     return model
 
-def train(model_name, dataset, batch_size, epochs, callbacks=None):
-    model = get_model(model_name)
+def train(model_name, dataset, batch_size, epochs, callbacks=None, input_shape=None):
+    model = get_model(model_name, input_shape)
     model.fit(dataset['x_train'], dataset['y_train'], batch_size, epochs, callbacks=callbacks)
     predictions = model.predict(dataset['x_test'])
     measure_and_print_performance(model_name, dataset['name'], dataset['y_test'], predictions.flatten())
