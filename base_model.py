@@ -1,6 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Input, Dense, Dropout
 from performance_meter import measure_and_print_performance
+from tensorflow.keras.utils import plot_model
 
 def get_model(model_name, input_shape):
     model = Sequential(name=model_name)
@@ -24,6 +25,7 @@ def get_model(model_name, input_shape):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=metrics)
 
     print(model.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return model
 
 def train(model_name, dataset, batch_size, epochs, callbacks=None, input_shape=None):

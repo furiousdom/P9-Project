@@ -7,6 +7,7 @@ from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
 from utils import cindex_score
 from keras.layers import concatenate
+from tensorflow.keras.utils import plot_model
 
 def molecule_model_RNN_RNN(model_name):
     # Encoder
@@ -35,6 +36,7 @@ def molecule_model_RNN_RNN(model_name):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def molecule_model_RNN_DNN(model_name):
@@ -61,6 +63,7 @@ def molecule_model_RNN_DNN(model_name):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def protein_model_RNN_RNN(model_name):
@@ -89,6 +92,7 @@ def protein_model_RNN_RNN(model_name):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def protein_model_RNN_DNN(model_name):
@@ -113,6 +117,7 @@ def protein_model_RNN_DNN(model_name):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def interaction_model(model_name):

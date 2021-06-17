@@ -1,16 +1,15 @@
-from xdparser import parse
-from utils import save_json_obj_to_file
-from utils import read_fastas_from_file
-from utils import load_json_obj_from_file
+import base_model
+import auen_model
+import arnn_model
 
-molecules = parse('fd', 'SMILES')
-molecules = list(molecules.values())
-print(f'Length of molecules: {len(molecules)}')
-save_json_obj_to_file('./data/drugbank-molecules.json', molecules)
-
-proteins = read_fastas_from_file('./data/uniprot_sprot.fasta')[:12000]
-print(len(proteins))
-proteins = set(proteins)
-print(f'Length of proteins: {len(proteins)}')
-proteins = list(proteins)
-save_json_obj_to_file('./data/drugbank-proteins.json', proteins)
+base_model.get_model('base_model', 300)
+models = ['auen', 'auen_molecule_CNN_CNN', 'auen_protein_CNN_CNN', 'auen_interaction_CNN_CNN']
+auen_model.molecule_model_CNN_CNN(models[1], 32, 8)
+auen_model.protein_model_CNN_CNN(models[2], 32, 4)
+auen_model.interaction_model(models[3])
+models = ['auen', 'auen_molecule_CNN_DNN', 'auen_protein_CNN_DNN', 'auen_interaction_CNN_DNN']
+auen_model.molecule_model_CNN_DNN(models[1], 32, 8)
+auen_model.protein_model_CNN_DNN(models[2], 32, 4)
+models = ['arnn', 'arnn_molecule_RNN_DNN', 'arnn_protein_RNN_DNN', 'arnn_interaction_RNN_DNN']
+arnn_model.molecule_model_RNN_DNN(models[1])
+arnn_model.protein_model_RNN_DNN(models[2])

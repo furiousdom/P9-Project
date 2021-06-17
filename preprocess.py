@@ -185,14 +185,6 @@ class DataSet(object):
         molecule_idx, protein_idx = molecule_protein_positions(self.dataset_name)
         convert = True if self.dataset_name in DATASETS_TO_PREPROCESS else False
 
-        train_molecules = []
-        train_proteins = []
-        train_Y = []
-
-        test_molecules = []
-        test_proteins = []
-        test_Y = []
-
         embedded_flattened_pairs = []
         Y = []
 

@@ -9,6 +9,7 @@ from performance_meter import measure_and_print_performance
 from utils import plot_training_metrics
 from utils import cindex_score
 from keras.layers import concatenate
+from tensorflow.keras.utils import plot_model
 
 NUM_FILTERS, FILTER_LENGTH1, FILTER_LENGTH2 = 32, 8, 4 # [8, 12], [4, 8]
 
@@ -50,6 +51,7 @@ def molecule_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
@@ -81,6 +83,7 @@ def molecule_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
@@ -120,6 +123,7 @@ def protein_model_CNN_CNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
@@ -151,6 +155,7 @@ def protein_model_CNN_DNN(model_name, NUM_FILTERS, FILTER_LENGTH):
     autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=metrics)
 
     print(autoencoder.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return autoencoder, encoder
 
 def interaction_model(model_name):
@@ -174,6 +179,7 @@ def interaction_model(model_name):
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=[cindex_score, 'accuracy'])
 
     print(model.summary())
+    plot_model(model, to_file=f'data/figures/{model_name}.png')
     return model
 
 def train_molecule_model(model_name, x_train, batch_size, epochs, callbacks=None):
